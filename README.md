@@ -4,9 +4,9 @@ This actor will let you know about failed runs of your actors via slack message 
 
 You will receive message like this to your slack or email:
 ```
-Found 1 actor with failed run.
+Found 1 actor with failed runs.
 
-Thess runs have failed for actor "failing-actor":
+These runs have failed for actor "failing-actor":
 - failedRunId1
 - failedRunId2
 ```

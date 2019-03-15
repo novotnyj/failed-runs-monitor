@@ -6,9 +6,9 @@ const mailSender = require('./mailSender');
 Apify.main(async () => {
     const input = await Apify.getValue('INPUT');
 
-    const { actorIds, slackApiKey, slackChannel, emails } = input;
+    const { actorIds, slackApiKey, slackChannel, emails, isEmptyDatasetFailed } = input;
 
-    const failedRuns = await failedRunsFinder(actorIds);
+    const failedRuns = await failedRunsFinder(actorIds, isEmptyDatasetFailed);
     await Apify.setValue('OUTPUT', failedRuns);
     if (failedRuns.length === 0) {
         console.log('Done.');

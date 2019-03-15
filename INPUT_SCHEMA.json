@@ -1,0 +1,38 @@
+{
+    "title": "Failed runs monitor input",
+    "type": "object",
+    "schemaVersion": 1,
+    "required": ["actorIds"],
+    "properties": {
+        "actorIds": {
+            "title": "Ids of monitored actors",
+            "description": "List of the ids of the actors you want to monitor",
+            "type": "array",
+            "editor": "stringList",
+            "uniqueItems": true,
+            "nullable": false,
+            "minItems": 1
+        },
+        "slackApiKey": {
+            "title": "Slack API key",
+            "description": "API key to your Slack",
+            "type": "string",
+            "editor": "textfield",
+            "nullable": true
+        },
+        "slackChannel": {
+            "title": "Slace channel name",
+            "description": "The name of Slack channel where the message should be posted",
+            "type": "string",
+            "editor": "textfield",
+            "nullable": true
+        },
+        "emails": {
+            "title": "Emails",
+            "description": "List of emails to send a message to, this field is optional",
+            "type": "array",
+            "editor": "stringList",
+            "uniqueItems": true
+        }
+    }
+}

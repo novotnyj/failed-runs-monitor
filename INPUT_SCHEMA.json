@@ -5,8 +5,8 @@
     "required": ["actorIds"],
     "properties": {
         "actorIds": {
-            "title": "Ids of monitored actors",
-            "description": "List of the ids of the actors you want to monitor",
+            "title": "Actor IDs",
+            "description": "List of the IDs of the actors you want to monitor",
             "type": "array",
             "editor": "stringList",
             "uniqueItems": true,

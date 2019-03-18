@@ -10,7 +10,7 @@
             "prefill": { "actorId": "XXX", "isEmptyDatasetFailed": false, "maxRunTimeSecs": 3600 },
             "type": "object",
             "editor": "json",
-            "nullabel": false,
+            "nullable": false,
             "minProperties": 1,
             "maxProperties": 3,
             "patternKey": "/(actorId|isEmptyDatasetFailed|maxRunTimeSecs)/"

@@ -74,19 +74,19 @@ async function getFailedRuns({ client, actor }) {
         if (items.length === 0) {
             break;
         }
-        const interestingRuns = items.filter((run) => {
-            return moment(run.finishedAt).isSameOrAfter(lastRun);
+        const finishedRuns = items.filter((run) => {
+            return run.finishedAt && moment(run.finishedAt).isSameOrAfter(lastRun);
         });
         if (isEmptyDatasetFailed) {
-            const emptyRuns = await findRunsWithEmptyDataset(client, interestingRuns);
+            const emptyRuns = await findRunsWithEmptyDataset(client, finishedRuns);
             emptyRuns.forEach((run) => processRun(run, REASONS.EMPTY_DATASET));
         }
         if (maxRunTimeSecs !== undefined && maxRunTimeSecs > 0) {
-            const timeoutingRuns = await findRunningLongerThan(interestingRuns, maxRunTimeSecs);
+            const timeoutingRuns = await findRunningLongerThan(items, maxRunTimeSecs);
             timeoutingRuns.forEach((run) => processRun(run, REASONS.RUNNING_TOO_LONG));
         }
-        const loadMore = interestingRuns.length === limit;
-        interestingRuns.forEach(processFailedRun);
+        const loadMore = finishedRuns.length === limit;
+        finishedRuns.forEach(processFailedRun);
 
         if (!loadMore) {
             break;

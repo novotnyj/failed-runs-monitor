@@ -2,6 +2,8 @@ const Apify = require('apify');
 const moment = require('moment');
 const { REASONS } = require('./const');
 
+const { log } = Apify.utils;
+
 const FAILED_STATUS = 'FAILED';
 const SUCCESS_STATUS = 'SUCCEEDED';
 const RUNNING_STATUS = 'RUNNING';
@@ -110,6 +112,9 @@ async function findFailedRuns(actors) {
 
     const failedRuns = {};
     for (const actor of actors) {
+        if (!actor.actorId) {
+            throw new Error(`Missing "actorId" property in ${JSON.stringify(actor)}`);
+        }
         const actorFailedRuns = await getFailedRuns({ client, actor });
         if (actorFailedRuns.length === 0) {
             continue;

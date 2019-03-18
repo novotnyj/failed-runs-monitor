@@ -3,30 +3,6 @@
     "type": "object",
     "schemaVersion": 1,
     "required": ["config"],
-    "example": {
-        "config": [
-            {
-                "actorId": "acbdef1"
-              },
-              {
-                "actorId": "acbdef2",
-                "isEmptyDatasetFailed": true,
-                "maxRunTimeSecs": 72000
-              }
-        ],
-        "slackApiKey": "my-super-secret-key",
-        "slackChannel": "#actor-notifications",
-        "emails": ["john.doe@example.com"]
-    },
-    "prefill": {
-        "config": [
-              {
-                "actorId": "actorId",
-                "isEmptyDatasetFailed": true,
-                "maxRunTimeSecs": 3600
-              }
-        ]
-    },
     "properties": {
         "config": {
             "title": "Configuration",

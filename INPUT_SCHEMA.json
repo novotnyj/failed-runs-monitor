@@ -7,13 +7,11 @@
         "config": {
             "title": "Configuration",
             "description": "actorId - ID of actor, isEmptyDatasetFailed - consider empty dataset as failed, maxRunTimeSecs - consider actor runnning longer than this as failed",
-            "prefill": { "actorId": "XXX", "isEmptyDatasetFailed": false, "maxRunTimeSecs": 3600 },
-            "type": "object",
+            "prefill": [{ "actorId": "XXX", "isEmptyDatasetFailed": false, "maxRunTimeSecs": 3600 }],
+            "type": "array",
             "editor": "json",
             "nullable": false,
-            "minProperties": 1,
-            "maxProperties": 3,
-            "patternKey": "/(actorId|isEmptyDatasetFailed|maxRunTimeSecs)/"
+            "minItems": 1
         },
         "slackApiKey": {
             "title": "Slack API key",

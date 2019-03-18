@@ -1,6 +1,6 @@
 # Failed Runs Monitor
 
-This actor will let you know about failed runs of your actors via slack message or email.
+This actor will let you know about failed runs of your actors via slack message or email. It can also notice you about successful runs with empty dataset, or about runs that are running for too long.
 
 You will receive message like this to your slack or email:
 ```

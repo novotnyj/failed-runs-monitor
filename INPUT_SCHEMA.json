@@ -3,11 +3,36 @@
     "type": "object",
     "schemaVersion": 1,
     "required": ["config"],
+    "example": {
+        "config": [
+            {
+                "actorId": "acbdef1"
+              },
+              {
+                "actorId": "acbdef2",
+                "isEmptyDatasetFailed": true,
+                "maxRunTimeSecs": 72000
+              }
+        ],
+        "slackApiKey": "my-super-secret-key",
+        "slackChannel": "#actor-notifications",
+        "emails": ["john.doe@example.com"]
+    },
+    "prefill": {
+        "config": [
+              {
+                "actorId": "actorId",
+                "isEmptyDatasetFailed": true,
+                "maxRunTimeSecs": 3600
+              }
+        ]
+    },
     "properties": {
         "config": {
             "title": "Configuration",
             "description": "actorId - ID of actor, isEmptyDatasetFailed - consider empty dataset as failed, maxRunTimeSecs - consider actor runnning longer than this as failed",
-            "prefill": [{ "actorId": "XXX", "isEmptyDatasetFailed": false, "maxRunTimeSecs": 3600 }],
+            "prefill": [{ "actorId": "XXX", "isEmptyDatasetFailed": true, "maxRunTimeSecs": 3600 }],
+            "example": [{ "actorId": "actorId", "isEmptyDatasetFailed": true, "maxRunTimeSecs": 3600 }],
             "type": "array",
             "editor": "json",
             "nullable": false,
@@ -18,6 +43,7 @@
             "description": "API key to your Slack",
             "type": "string",
             "editor": "textfield",
+            "example": "my-secret-key",
             "nullable": true
         },
         "slackChannel": {
@@ -25,6 +51,7 @@
             "description": "The name of Slack channel where the message should be posted",
             "type": "string",
             "editor": "textfield",
+            "example": "#actor-notifications",
             "nullable": true
         },
         "emails": {
@@ -32,7 +59,8 @@
             "description": "List of emails to send a message to, this field is optional",
             "type": "array",
             "editor": "stringList",
-            "uniqueItems": true
+            "uniqueItems": true,
+            "example": [ "john.doe@example.com" ]
         }
     }
 }

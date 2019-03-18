@@ -1,5 +1,5 @@
 const Slack = require('slack-node');
-const { getRunUrl } = require('./utils');
+const { getRunUrl, reasonToString } = require('./utils');
 
 async function postMessage(slack, channel, text) {
     return new Promise((resolve, reject) => {
@@ -18,13 +18,18 @@ async function postMessage(slack, channel, text) {
 
 function formatMessage(failedRuns) {
     let message = `<!channel> Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor' : 'actors'} with failed runs.\n\n`;
+    const runFormatter = (run, item) => {
+        const { reason } = run;
+        const reasonString = reasonToString(reason);
+        return `- <${getRunUrl(item.actorId, run.id)}|${run.id}>${reasonString !== '' ? ` (${reasonString})` : ''}\n`;
+    };
     for (const item of failedRuns) {
         if (item.failedRuns.length > 1) {
             message += `These runs have failed for actor "${item.name}":\n`;
         } else {
             message += `This run has failed for actor "${item.name}":\n`;
         }
-        message += item.failedRuns.map((run) => `- <${getRunUrl(item.actorId, run.id)}|${run.id}>\n`);
+        message += item.failedRuns.map((run) => runFormatter(run, item));
         message += '\n';
     }
 

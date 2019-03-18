@@ -1,17 +1,19 @@
 {
-    "title": "Failed runs monitor input",
+    "title": "Runs monitor",
     "type": "object",
     "schemaVersion": 1,
-    "required": ["actorIds"],
+    "required": ["config"],
     "properties": {
-        "actorIds": {
-            "title": "Actor IDs",
-            "description": "List of the IDs of the actors you want to monitor",
-            "type": "array",
-            "editor": "stringList",
-            "uniqueItems": true,
-            "nullable": false,
-            "minItems": 1
+        "config": {
+            "title": "Configuration",
+            "description": "actorId - ID of actor, isEmptyDatasetFailed - consider empty dataset as failed, maxRunTimeSecs - consider actor runnning longer than this as failed",
+            "prefill": { "actorId": "XXX", "isEmptyDatasetFailed": false, "maxRunTimeSecs": 3600 },
+            "type": "object",
+            "editor": "json",
+            "nullabel": false,
+            "minProperties": 1,
+            "maxProperties": 3,
+            "patternKey": "/(actorId|isEmptyDatasetFailed|maxRunTimeSecs)/"
         },
         "slackApiKey": {
             "title": "Slack API key",
@@ -33,14 +35,6 @@
             "type": "array",
             "editor": "stringList",
             "uniqueItems": true
-        },
-        "isEmptyDatasetFailed": {
-            "title": "Consider empty runs as failed",
-            "description": "Should successful runs with 0 items in dataset be considered as failed?",
-            "type": "boolean",
-            "default": false,
-            "editor": "checkbox",
-            "nullable": false
         }
     }
 }

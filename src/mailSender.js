@@ -1,11 +1,15 @@
 const Apify = require('apify');
-const { getRunUrl } = require('./utils');
+const { getRunUrl, reasonToString } = require('./utils');
 
 const subject = 'Failed runs at apify.com...';
 
 function formatMessage(failedRuns) {
     let message = `Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor' : 'actors'} with failed runs.<br/><br/>`;
-    const runFormatter = (item, run) => `<li><a href="${getRunUrl(item.actorId, run.id)}">${run.id}</a></li>`;
+    const runFormatter = (item, run) => {
+        const { reason } = run;
+        const reasonString = reasonToString(reason);
+        return `<li><a href="${getRunUrl(item.actorId, run.id)}">${run.id}</a>${reasonString !== '' ? ` (${reason})` : ''}</li>`;
+    };
     for (const item of failedRuns) {
         if (item.failedRuns.length > 1) {
             message += `These runs have failed for actor "${item.name}":<br/>`;

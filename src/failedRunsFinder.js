@@ -4,6 +4,7 @@ const { REASONS } = require('./const');
 
 const FAILED_STATUS = 'FAILED';
 const SUCCESS_STATUS = 'SUCCEEDED';
+const RUNNING_STATUS = 'RUNNING';
 
 async function findRunsWithEmptyDataset(client, runs) {
     const { datasets } = client;
@@ -15,32 +16,56 @@ async function findRunsWithEmptyDataset(client, runs) {
         const { defaultDatasetId } = run;
         const dataset = await datasets.getDataset({ datasetId: defaultDatasetId });
         if (dataset.cleanItemCount === 0) {
-            result.push({ ...run, reason: REASONS.EMPTY_DATASET });
+            result.push(run);
         }
     }
 
     return result;
 }
 
-async function getFailedRuns({ client, actId, isEmptyDatasetFailed }) {
+async function findRunningLongerThan(runs, timeout) {
+    const result = [];
+    for (const run of runs) {
+        if (run.status !== RUNNING_STATUS) {
+            continue;
+        }
+
+        const { startedAt } = run;
+        const startedAtMoment = moment(startedAt);
+        const expectedFinish = moment(startedAt).add(timeout, 'seconds');
+
+        if (startedAtMoment.isAfter(expectedFinish)) {
+            result.push(run);
+        }
+    }
+
+    return result;
+}
+
+async function getFailedRuns({ client, actor }) {
+    const { actorId, isEmptyDatasetFailed, maxRunTimeSecs } = actor;
     const store = await Apify.openKeyValueStore('failed-runs-monitoring');
-    const loadedLastRun = await store.getValue(actId);
+    const loadedLastRun = await store.getValue(actorId);
     const lastRun = loadedLastRun ? moment(loadedLastRun) : moment();
 
     const { acts } = client;
-    const failedRuns = [];
+    const failedRuns = {};
     let offset = 0;
     const limit = 100;
 
-    const processRun = (run) => {
+    const processRun = (run, reason) => {
+        failedRuns[run.id] = { ...run, reason };
+    };
+
+    const processFailedRun = (run) => {
         if (run.status === FAILED_STATUS) {
-            failedRuns.push({ ...run, reason: REASONS.FAILED });
+            processRun(run, REASONS.FAILED);
         }
     };
 
     while (true) {
         const runs = await acts.listRuns({
-            actId,
+            actId: actorId,
             desc: true,
             limit,
             offset,
@@ -54,10 +79,14 @@ async function getFailedRuns({ client, actId, isEmptyDatasetFailed }) {
         });
         if (isEmptyDatasetFailed) {
             const emptyRuns = await findRunsWithEmptyDataset(client, interestingRuns);
-            failedRuns.push(...emptyRuns);
+            emptyRuns.forEach((run) => processRun(run, REASONS.EMPTY_DATASET));
+        }
+        if (maxRunTimeSecs !== undefined && maxRunTimeSecs > 0) {
+            const timeoutingRuns = await findRunningLongerThan(runs, maxRunTimeSecs);
+            timeoutingRuns.forEach((run) => processRun(run, REASONS.RUNNING_TOO_LONG));
         }
         const loadMore = interestingRuns.length === limit;
-        interestingRuns.forEach(processRun);
+        interestingRuns.forEach(processFailedRun);
 
         if (!loadMore) {
             break;
@@ -65,9 +94,9 @@ async function getFailedRuns({ client, actId, isEmptyDatasetFailed }) {
         offset += limit;
     }
 
-    await store.setValue(actId, moment().utc().toISOString());
+    await store.setValue(actorId, moment().utc().toISOString());
 
-    return failedRuns;
+    return Object.values(failedRuns);
 }
 
 async function getActorName(client, actId) {
@@ -76,20 +105,21 @@ async function getActorName(client, actId) {
     return act.name;
 }
 
-async function findFailedRuns(actorIds, isEmptyDatasetFailed = false) {
+async function findFailedRuns(actors) {
     const { client } = Apify;
 
     const failedRuns = {};
-    for (const actId of actorIds) {
-        const actorFailedRuns = await getFailedRuns({ client, actId, isEmptyDatasetFailed });
+    for (const actor of actors) {
+        const actorFailedRuns = await getFailedRuns({ client, actor });
         if (actorFailedRuns.length === 0) {
             continue;
         }
 
-        failedRuns[actId] = {
+        const { actorId } = actor;
+        failedRuns[actorId] = {
             failedRuns: actorFailedRuns,
-            actorId: actId,
-            name: await getActorName(client, actId),
+            actorId,
+            name: await getActorName(client, actorId),
         };
     }
 

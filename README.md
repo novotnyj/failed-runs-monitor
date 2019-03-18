@@ -7,8 +7,8 @@ You will receive message like this to your slack or email:
 Found 1 actor with failed runs.
 
 These runs have failed for actor "failing-actor":
-- failedRunId1
-- failedRunId2
+- failedRunId1 (0 items in dataset)
+- failedRunId2 (Failed)
 ```
 
 Where `failedRunId1` and `failedRunId2` will be links to the details of failed runs.

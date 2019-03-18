@@ -64,13 +64,13 @@ async function getFailedRuns({ client, actor }) {
     };
 
     while (true) {
-        const runs = await acts.listRuns({
+        const response = await acts.listRuns({
             actId: actorId,
             desc: true,
             limit,
             offset,
         });
-        const { items } = runs;
+        const { items } = response;
         if (items.length === 0) {
             break;
         }
@@ -82,7 +82,7 @@ async function getFailedRuns({ client, actor }) {
             emptyRuns.forEach((run) => processRun(run, REASONS.EMPTY_DATASET));
         }
         if (maxRunTimeSecs !== undefined && maxRunTimeSecs > 0) {
-            const timeoutingRuns = await findRunningLongerThan(runs, maxRunTimeSecs);
+            const timeoutingRuns = await findRunningLongerThan(interestingRuns, maxRunTimeSecs);
             timeoutingRuns.forEach((run) => processRun(run, REASONS.RUNNING_TOO_LONG));
         }
         const loadMore = interestingRuns.length === limit;

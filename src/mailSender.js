@@ -8,7 +8,7 @@ function formatMessage(failedRuns) {
     const runFormatter = (item, run) => {
         const { reason, actual, expected } = run;
         const reasonString = reasonToString(reason, actual, expected);
-        return `<li><a href="${getRunUrl(item.actorId, run.id)}">${run.id}</a>${reasonString !== '' ? ` (${reason})` : ''}</li>`;
+        return `<li><a href="${getRunUrl(item.actorId, run.id)}">${run.id}</a>${reasonString !== '' ? ` (${reasonString})` : ''}</li>`;
     };
     for (const item of failedRuns) {
         if (item.failedRuns.length > 1) {
@@ -17,7 +17,7 @@ function formatMessage(failedRuns) {
             message += `This run has failed for actor "${item.name}":<br/>`;
         }
         message += '<ul>';
-        message += item.failedRuns.map((run) => runFormatter(item, run));
+        message += item.failedRuns.map((run) => runFormatter(item, run)).join('\n');
         message += '</ul><br/>';
     }
 

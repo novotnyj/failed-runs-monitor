@@ -2,13 +2,13 @@ const Apify = require('apify');
 const moment = require('moment');
 const { REASONS } = require('./const');
 
-const { log } = Apify.utils;
+// const { log } = Apify.utils;
 
 const FAILED_STATUS = 'FAILED';
 const SUCCESS_STATUS = 'SUCCEEDED';
 const RUNNING_STATUS = 'RUNNING';
 
-async function findRunsWithEmptyDataset(client, runs) {
+async function findRunsSmallDataset(client, runs, minDatasetItems) {
     const { datasets } = client;
     const result = [];
     for (const run of runs) {
@@ -17,8 +17,12 @@ async function findRunsWithEmptyDataset(client, runs) {
         }
         const { defaultDatasetId } = run;
         const dataset = await datasets.getDataset({ datasetId: defaultDatasetId });
-        if (dataset.cleanItemCount === 0) {
-            result.push(run);
+        if (dataset.cleanItemCount < minDatasetItems) {
+            result.push({
+                ...run,
+                expected: minDatasetItems,
+                actual: dataset.cleanItemCount,
+            });
         }
     }
 
@@ -37,15 +41,26 @@ async function findRunningLongerThan(runs, timeout) {
         const expectedFinish = moment(startedAt).add(timeout, 'seconds');
 
         if (startedAtMoment.isAfter(expectedFinish)) {
-            result.push(run);
+            result.push({
+                ...run,
+                expected: timeout,
+                actual: expectedFinish.utc().toNow() - startedAtMoment.utc().toNow(),
+            });
         }
     }
 
     return result;
 }
 
-async function getFailedRuns({ client, actor }) {
-    const { actorId, isEmptyDatasetFailed, maxRunTimeSecs } = actor;
+async function getFailedRuns({ client, config }) {
+    const { actorId, isEmptyDatasetFailed, maxRunTimeSecs } = config;
+    let { minDatasetItems } = config;
+
+    // Backward compatibility, remove in future 2019-03-19
+    if (isEmptyDatasetFailed && minDatasetItems === undefined) {
+        minDatasetItems = 1;
+    }
+
     const store = await Apify.openKeyValueStore('failed-runs-monitoring');
     const loadedLastRun = await store.getValue(actorId);
     const lastRun = loadedLastRun ? moment(loadedLastRun) : moment();
@@ -79,9 +94,9 @@ async function getFailedRuns({ client, actor }) {
         const finishedRuns = items.filter((run) => {
             return run.finishedAt && moment(run.finishedAt).isSameOrAfter(lastRun);
         });
-        if (isEmptyDatasetFailed) {
-            const emptyRuns = await findRunsWithEmptyDataset(client, finishedRuns);
-            emptyRuns.forEach((run) => processRun(run, REASONS.EMPTY_DATASET));
+        if (minDatasetItems && minDatasetItems > 0) {
+            const emptyRuns = await findRunsSmallDataset(client, finishedRuns, minDatasetItems);
+            emptyRuns.forEach((run) => processRun(run, REASONS.SMALL_DATASET));
         }
         if (maxRunTimeSecs !== undefined && maxRunTimeSecs > 0) {
             const timeoutingRuns = await findRunningLongerThan(items, maxRunTimeSecs);
@@ -107,20 +122,20 @@ async function getActorName(client, actId) {
     return act.name;
 }
 
-async function findFailedRuns(actors) {
+async function findFailedRuns(configs) {
     const { client } = Apify;
 
     const failedRuns = {};
-    for (const actor of actors) {
-        if (!actor.actorId) {
-            throw new Error(`Missing "actorId" property in ${JSON.stringify(actor)}`);
+    for (const config of configs) {
+        if (!config.actorId) {
+            throw new Error(`Missing "actorId" property in ${JSON.stringify(config)}`);
         }
-        const actorFailedRuns = await getFailedRuns({ client, actor });
+        const actorFailedRuns = await getFailedRuns({ client, config });
         if (actorFailedRuns.length === 0) {
             continue;
         }
 
-        const { actorId } = actor;
+        const { actorId } = config;
         failedRuns[actorId] = {
             failedRuns: actorFailedRuns,
             actorId,

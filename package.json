@@ -5,6 +5,7 @@
 	"main": "main.js",
 	"dependencies": {
 		"apify": "^0.11.0",
+		"humanize-duration": "^3.18.0",
 		"moment": "^2.24.0",
 		"slack-node": "^0.1.8"
 	},

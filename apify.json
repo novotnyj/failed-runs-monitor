@@ -1,6 +1,6 @@
 {
 	"name": "failed-runs-monitor",
-	"version": "0.1",
+	"version": "0.2",
 	"buildTag": "latest",
 	"env": null,
 	"template": "basic"

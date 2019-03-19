@@ -6,8 +6,8 @@ const subject = 'Failed runs at apify.com...';
 function formatMessage(failedRuns) {
     let message = `Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor' : 'actors'} with failed runs.<br/><br/>`;
     const runFormatter = (item, run) => {
-        const { reason } = run;
-        const reasonString = reasonToString(reason);
+        const { reason, actual, expected } = run;
+        const reasonString = reasonToString(reason, actual, expected);
         return `<li><a href="${getRunUrl(item.actorId, run.id)}">${run.id}</a>${reasonString !== '' ? ` (${reason})` : ''}</li>`;
     };
     for (const item of failedRuns) {

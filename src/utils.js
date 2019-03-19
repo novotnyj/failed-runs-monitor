@@ -1,15 +1,18 @@
+const humanizeDuration = require('humanize-duration');
 const { REASONS } = require('./const');
 
 function getRunUrl(actId, runId) {
     return `https://my.apify.com/actors/${actId}#/runs/${runId}`;
 }
 
-function reasonToString(reason) {
-    if (reason === REASONS.EMPTY_DATASET) {
-        return '0 items in dataset';
+function reasonToString(reason, actual, expected) {
+    if (reason === REASONS.SMALL_DATASET) {
+        return `More than ${expected} dataset items expected, ${actual} found`;
     }
     if (reason === REASONS.RUNNING_TOO_LONG) {
-        return 'Running too long';
+        const formattedExpected = humanizeDuration(expected * 1000);
+        const formattedActual = humanizeDuration(actual * 1000);
+        return `Should have finished in ${formattedExpected}, running for ${formattedActual} now`;
     }
     if (reason === REASONS.FAILED) {
         return 'Failed';

@@ -1,6 +1,6 @@
 # Failed Runs Monitor
 
-This actor will let you know about failed and timed out runs of your actors via slack message or email. It can also notice you about successful runs with empty/small dataset, or about runs that are running for too long.
+This actor will let you know about failed and timed out runs of your actors via Slack or email. It could also notice you about successful runs with empty/small dataset or runs that are running for too long.
 
 You will receive message like this to your slack or email:
 ```
@@ -9,7 +9,8 @@ Found 1 actor with failed runs.
 These runs have failed for actor "failing-actor":
 - failed-run-id-1 (More than 250 dataset items expected, 10 found)
 - failed-run-id-2 (Should have finished in 3 hours, running for 5 hours)
-- failed-run-id-2 (Failed)
+- failed-run-id-3 (Failed)
+- failed-run-id-4 (Timed out)
 ```
 
 Where `failedRunIdX` will be links to the details of failed runs.
@@ -45,4 +46,4 @@ Config is an array of objects, where every object has these attributes:
 - `minDatasetItems` - Integer, If provided, then successful runs with less than `minDatasetItems` items in default dataset are considered as failed,
 - `maxRunTimeSecs` - Integer, If provided, then runs running longer than `maxRunTimeSecs` are considered as failed.
 
-Note: If you want to receive slack notifications then both `Slack API key` and `Slack channel name` have to provided.
+Note: If you want to receive slack notifications then both `slackApiKey` and `slackChannel` have to provided.

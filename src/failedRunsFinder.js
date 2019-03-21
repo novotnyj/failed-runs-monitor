@@ -1,12 +1,14 @@
 const Apify = require('apify');
 const moment = require('moment');
+const { ACT_JOB_STATUSES } = require('apify-shared/consts');
 const { REASONS } = require('./const');
 
 // const { log } = Apify.utils;
 
-const FAILED_STATUS = 'FAILED';
-const SUCCESS_STATUS = 'SUCCEEDED';
-const RUNNING_STATUS = 'RUNNING';
+const FAILED_STATUS = ACT_JOB_STATUSES.FAILED;
+const SUCCESS_STATUS = ACT_JOB_STATUSES.SUCCEEDED;
+const RUNNING_STATUS = ACT_JOB_STATUSES.RUNNING;
+const TIMEOUTED_STATUS = ACT_JOB_STATUSES.TIMED_OUT;
 
 async function findRunsSmallDataset(client, runs, minDatasetItems) {
     const { datasets } = client;
@@ -77,6 +79,9 @@ async function getFailedRuns({ client, config }) {
     const processFailedRun = (run) => {
         if (run.status === FAILED_STATUS) {
             processRun(run, REASONS.FAILED);
+        }
+        if (run.status === TIMEOUTED_STATUS) {
+            processRun(run, REASONS.TIMEOUTED);
         }
     };
 

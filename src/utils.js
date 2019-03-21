@@ -17,6 +17,9 @@ function reasonToString(reason, actual, expected) {
     if (reason === REASONS.FAILED) {
         return 'Failed';
     }
+    if (reason === REASONS.TIMEOUTED) {
+        return 'Timed out';
+    }
 
     throw new Error(`Unkown reason ${reason}`);
 }

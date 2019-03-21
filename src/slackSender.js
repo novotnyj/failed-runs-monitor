@@ -19,8 +19,8 @@ async function postMessage(slack, channel, text) {
 function formatMessage(failedRuns) {
     let message = `<!channel> Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor' : 'actors'} with failed runs.\n\n`;
     const runFormatter = (run, item) => {
-        const { reason } = run;
-        const reasonString = reasonToString(reason);
+        const { reason, actual, expected } = run;
+        const reasonString = reasonToString(reason, actual, expected);
         return `- <${getRunUrl(item.actorId, run.id)}|${run.id}>${reasonString !== '' ? ` (${reasonString})` : ''}`;
     };
     for (const item of failedRuns) {

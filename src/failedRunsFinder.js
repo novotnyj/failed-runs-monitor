@@ -39,10 +39,11 @@ async function findRunningLongerThan(runs, timeout) {
         }
 
         const { startedAt } = run;
+        const now = moment().utc();
         const startedAtMoment = moment(startedAt);
-        const expectedFinish = moment(startedAt).add(timeout, 'seconds');
+        const expectedFinish = moment(startedAt).utc().add(timeout, 'seconds');
 
-        if (startedAtMoment.isAfter(expectedFinish)) {
+        if (now.isAfter(expectedFinish)) {
             result.push({
                 ...run,
                 expected: timeout,

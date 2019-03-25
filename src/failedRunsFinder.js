@@ -47,7 +47,7 @@ async function findRunningLongerThan(runs, timeout) {
             result.push({
                 ...run,
                 expected: timeout,
-                actual: expectedFinish.utc().toNow() - startedAtMoment.utc().toNow(),
+                actual: expectedFinish.utc().unix() - startedAtMoment.utc().unix(),
             });
         }
     }

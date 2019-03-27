@@ -31,19 +31,28 @@ async function findRunsSmallDataset(client, runs, minDatasetItems) {
     return result;
 }
 
-async function findRunningLongerThan(runs, timeout) {
+async function findRunningLongerThan(runs, timeout, store) {
     const result = [];
     for (const run of runs) {
         if (run.status !== RUNNING_STATUS) {
             continue;
         }
 
-        const { startedAt } = run;
+        const { id, startedAt } = run;
         const now = moment().utc();
         const startedAtMoment = moment(startedAt);
         const expectedFinish = moment(startedAt).utc().add(timeout, 'seconds');
 
         if (now.isAfter(expectedFinish)) {
+            const lastNoticedAt = await store.getValue(`${id}-long`);
+            if (lastNoticedAt) {
+                const lastNoticedMoment = moment(lastNoticedAt);
+                const threeHoursAgo = moment().utc().subtract(3, 'hours');
+                if (lastNoticedMoment.isAfter(threeHoursAgo)) {
+                    continue;
+                }
+            }
+            await store.setValue(`${id}-long`, moment().utc().toISOString());
             result.push({
                 ...run,
                 expected: timeout,
@@ -105,7 +114,7 @@ async function getFailedRuns({ client, config }) {
             emptyRuns.forEach((run) => processRun(run, REASONS.SMALL_DATASET));
         }
         if (maxRunTimeSecs !== undefined && maxRunTimeSecs > 0) {
-            const timeoutingRuns = await findRunningLongerThan(items, maxRunTimeSecs);
+            const timeoutingRuns = await findRunningLongerThan(items, maxRunTimeSecs, store);
             timeoutingRuns.forEach((run) => processRun(run, REASONS.RUNNING_TOO_LONG));
         }
         const loadMore = finishedRuns.length === limit;

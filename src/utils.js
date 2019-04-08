@@ -10,8 +10,8 @@ function reasonToString(reason, actual, expected) {
         return `More than ${expected} dataset items expected, ${actual} found`;
     }
     if (reason === REASONS.RUNNING_TOO_LONG) {
-        const formattedExpected = humanizeDuration(expected * 1000);
-        const formattedActual = humanizeDuration(actual * 1000);
+        const formattedExpected = humanizeDuration(expected, { largest: 2 });
+        const formattedActual = humanizeDuration(actual, { largest: 2 });
         return `Should have finished in ${formattedExpected}, running for ${formattedActual} now`;
     }
     if (reason === REASONS.FAILED) {

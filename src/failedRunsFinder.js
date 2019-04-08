@@ -41,7 +41,7 @@ async function findRunningLongerThan(runs, timeout, store) {
         const { id, startedAt } = run;
         const now = moment().utc();
         const startedAtMoment = moment(startedAt);
-        const expectedFinish = moment(startedAt).utc().add(timeout, 'seconds');
+        const expectedFinish = moment(startedAt).add(timeout, 'seconds');
 
         if (now.isAfter(expectedFinish)) {
             const lastNoticedAt = await store.getValue(`${id}-long`);
@@ -55,8 +55,8 @@ async function findRunningLongerThan(runs, timeout, store) {
             await store.setValue(`${id}-long`, moment().utc().toISOString());
             result.push({
                 ...run,
-                expected: timeout,
-                actual: expectedFinish.utc().unix() - startedAtMoment.utc().unix(),
+                expected: timeout * 1000,
+                actual: expectedFinish.valueOf() - startedAtMoment.valueOf(),
             });
         }
     }

@@ -155,6 +155,7 @@ async function findFailedRuns(configs) {
             failedRuns: actorFailedRuns,
             actorId,
             name: await getActorName(client, actorId),
+            checkedAt: moment().toISOString(),
         };
     }
 

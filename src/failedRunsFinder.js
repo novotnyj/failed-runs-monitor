@@ -135,7 +135,7 @@ async function getFailedRuns({ client, config }) {
         offset += limit;
     }
 
-    await store.setValue(actorId, moment().utc().toISOString());
+    await store.setValue(lastRunKey, moment().utc().toISOString());
 
     return Object.values(failedRuns);
 }

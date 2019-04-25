@@ -17,17 +17,19 @@ async function postMessage(slack, channel, text) {
 }
 
 function formatMessage(failedRuns) {
-    let message = `<!channel> Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor' : 'actors'} with failed runs.\n\n`;
+    let message = `<!channel> Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor/task' : 'actors/tasks'} with failed runs.\n\n`;
     const runFormatter = (run, item) => {
         const { reason, actual, expected } = run;
         const reasonString = reasonToString(reason, actual, expected);
-        return `- <${getRunUrl(item.actorId, run.id)}|${run.id}>${reasonString !== '' ? ` (${reasonString})` : ''}`;
+        const runUrl = getRunUrl(item.actorId, item.taskId, run.id);
+        return `- <${runUrl}|${run.id}>${reasonString !== '' ? ` (${reasonString})` : ''}`;
     };
     for (const item of failedRuns) {
+        const objectName = item.taskId ? 'task' : 'actor';
         if (item.failedRuns.length > 1) {
-            message += `These runs have failed for actor "${item.name}":\n`;
+            message += `These runs have failed for ${objectName} "${item.name}":\n`;
         } else {
-            message += `This run has failed for actor "${item.name}":\n`;
+            message += `This run has failed for ${objectName} "${item.name}":\n`;
         }
         message += item.failedRuns.map((run) => runFormatter(run, item)).join('\n');
         message += '\n';

@@ -1,13 +1,16 @@
 const humanizeDuration = require('humanize-duration');
 const { REASONS } = require('./const');
 
-function getRunUrl(actId, runId) {
+function getRunUrl(actId, taskId, runId) {
+    if (taskId) {
+        return `https://my.apify.com/tasks/${taskId}#/runs/${runId}`;
+    }
     return `https://my.apify.com/actors/${actId}#/runs/${runId}`;
 }
 
 function reasonToString(reason, actual, expected) {
     if (reason === REASONS.SMALL_DATASET) {
-        return `More than ${expected} dataset items expected, ${actual} found`;
+        return `More than ${expected} dataset items expected, only ${actual} found`;
     }
     if (reason === REASONS.RUNNING_TOO_LONG) {
         const formattedExpected = humanizeDuration(expected, { largest: 2 });

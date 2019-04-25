@@ -56,7 +56,7 @@ async function findRunningLongerThan(runs, timeout, store) {
             result.push({
                 ...run,
                 expected: timeout * 1000,
-                actual: expectedFinish.valueOf() - startedAtMoment.valueOf(),
+                actual: now.valueOf() - startedAtMoment.valueOf(),
             });
         }
     }
@@ -65,7 +65,7 @@ async function findRunningLongerThan(runs, timeout, store) {
 }
 
 async function getFailedRuns({ client, config }) {
-    const { actorId, isEmptyDatasetFailed, maxRunTimeSecs } = config;
+    const { actorId, taskId, isEmptyDatasetFailed, maxRunTimeSecs } = config;
     let { minDatasetItems } = config;
 
     // Backward compatibility, remove in future 2019-03-19
@@ -77,7 +77,16 @@ async function getFailedRuns({ client, config }) {
     const loadedLastRun = await store.getValue(actorId);
     const lastRun = loadedLastRun ? moment(loadedLastRun) : moment();
 
-    const { acts } = client;
+    const { acts, tasks } = client;
+    let endpoint;
+    const options = { desc: true };
+    if (taskId && !actorId) {
+        endpoint = tasks;
+        options.taskId = taskId;
+    } else {
+        endpoint = acts;
+        options.actId = actorId;
+    }
     const failedRuns = {};
     let offset = 0;
     const limit = 100;
@@ -96,9 +105,8 @@ async function getFailedRuns({ client, config }) {
     };
 
     while (true) {
-        const response = await acts.listRuns({
-            actId: actorId,
-            desc: true,
+        const response = await endpoint.listRuns({
+            ...options,
             limit,
             offset,
         });
@@ -131,10 +139,16 @@ async function getFailedRuns({ client, config }) {
     return Object.values(failedRuns);
 }
 
-async function getActorName(client, actId) {
-    const { acts } = client;
-    const act = await acts.getAct({ actId });
-    return act.name;
+async function getObjectName(client, actId, taskId) {
+    const { acts, tasks } = client;
+    if (actId) {
+        const act = await acts.getAct({ actId });
+        return act.name;
+    }
+    if (taskId) {
+        const task = await tasks.getTask({ taskId });
+        return task.name;
+    }
 }
 
 async function findFailedRuns(configs) {
@@ -142,19 +156,23 @@ async function findFailedRuns(configs) {
 
     const failedRuns = {};
     for (const config of configs) {
-        if (!config.actorId) {
-            throw new Error(`Missing "actorId" property in ${JSON.stringify(config)}`);
+        if (!config.actorId || !config.taskId) {
+            throw new Error(`Missing "actorId" or "taskId" property in ${JSON.stringify(config)}`);
+        }
+        if (config.actorId && config.taskId) {
+            throw new Error(`Cannot use both "actorId" and "taskId" in ${JSON.stringify(config)}`);
         }
         const actorFailedRuns = await getFailedRuns({ client, config });
         if (actorFailedRuns.length === 0) {
             continue;
         }
 
-        const { actorId } = config;
+        const { actorId, taskId } = config;
         failedRuns[actorId] = {
             failedRuns: actorFailedRuns,
             actorId,
-            name: await getActorName(client, actorId),
+            taskId,
+            name: await getObjectName(client, actorId),
             checkedAt: moment().toISOString(),
         };
     }

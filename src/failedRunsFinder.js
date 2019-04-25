@@ -156,7 +156,7 @@ async function findFailedRuns(configs) {
 
     const failedRuns = {};
     for (const config of configs) {
-        if (!config.actorId || !config.taskId) {
+        if (!config.actorId && !config.taskId) {
             throw new Error(`Missing "actorId" or "taskId" property in ${JSON.stringify(config)}`);
         }
         if (config.actorId && config.taskId) {

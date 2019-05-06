@@ -148,7 +148,7 @@ async function getObjectName(client, actId, taskId) {
     }
     if (taskId) {
         const task = await tasks.getTask({ taskId });
-        return task.name;
+        return task.name || task.data.name;
     }
 }
 

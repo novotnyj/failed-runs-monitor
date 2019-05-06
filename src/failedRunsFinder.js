@@ -148,7 +148,7 @@ async function getObjectName(client, actId, taskId) {
     }
     if (taskId) {
         const task = await tasks.getTask({ taskId });
-        return task.name || task.data.name;
+        return task.name;
     }
 }
 
@@ -173,7 +173,7 @@ async function findFailedRuns(configs) {
             failedRuns: actorFailedRuns,
             actorId,
             taskId,
-            name: await getObjectName(client, actorId),
+            name: await getObjectName(client, actorId, taskId),
             checkedAt: moment().toISOString(),
         };
     }

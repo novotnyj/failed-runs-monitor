@@ -23,7 +23,7 @@
             "nullable": true
         },
         "slackChannel": {
-            "title": "Slace channel name",
+            "title": "Slack channel name",
             "description": "The name of Slack channel where the message should be posted",
             "type": "string",
             "editor": "textfield",

@@ -74,7 +74,7 @@ async function getFailedRuns({ client, config }) {
     }
 
     const store = await Apify.openKeyValueStore('failed-runs-monitoring');
-    const lastRunKey = taskId ? `task-${taskId}` : actorId;
+    const lastRunKey = taskId ? `task-${taskId.replace('/', '_')}` : actorId.replace('/', '_');
     const loadedLastRun = await store.getValue(lastRunKey);
     const lastRun = loadedLastRun ? moment(loadedLastRun) : moment();
 

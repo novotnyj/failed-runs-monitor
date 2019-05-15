@@ -1,11 +1,35 @@
+const Apify = require('apify');
 const humanizeDuration = require('humanize-duration');
 const { REASONS } = require('./const');
 
-function getRunUrl(actId, taskId, runId) {
-    if (taskId) {
-        return `https://my.apify.com/tasks/${taskId}#/runs/${runId}`;
+const { client } = Apify;
+const { tasks, acts } = client;
+
+const taskCache = {};
+const actorCache = {};
+
+async function getTask(taskId) {
+    if (!taskCache[taskId]) {
+        taskCache[taskId] = await tasks.getTask({ taskId });
     }
-    return `https://my.apify.com/actors/${actId}#/runs/${runId}`;
+    return taskCache[taskId];
+}
+
+async function getActor(actId) {
+    if (!actorCache[actId]) {
+        actorCache[actId] = await acts.getAct({ actId });
+    }
+
+    return actorCache[actId];
+}
+
+async function getRunUrl(actId, taskId, runId) {
+    if (taskId) {
+        const task = await getTask(taskId);
+        return `https://my.apify.com/tasks/${task.id}#/runs/${runId}`;
+    }
+    const actor = await getActor(actId);
+    return `https://my.apify.com/actors/${actor.id}#/runs/${runId}`;
 }
 
 function reasonToString(reason, actual, expected) {

@@ -16,12 +16,12 @@ async function postMessage(slack, channel, text) {
     });
 }
 
-function formatMessage(failedRuns) {
+async function formatMessage(failedRuns) {
     let message = `<!channel> Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor/task' : 'actors/tasks'} with failed runs.\n\n`;
-    const runFormatter = (run, item) => {
+    const runFormatter = async (run, item) => {
         const { reason, actual, expected } = run;
         const reasonString = reasonToString(reason, actual, expected);
-        const runUrl = getRunUrl(item.actorId, item.taskId, run.id);
+        const runUrl = await getRunUrl(item.actorId, item.taskId, run.id);
         return `- <${runUrl}|${run.id}>${reasonString !== '' ? ` (${reasonString})` : ''}`;
     };
     for (const item of failedRuns) {
@@ -31,7 +31,9 @@ function formatMessage(failedRuns) {
         } else {
             message += `This run has failed for ${objectName} "${item.name}":\n`;
         }
-        message += item.failedRuns.map((run) => runFormatter(run, item)).join('\n');
+        for (const run of item.failedRuns) {
+            message += `${await runFormatter(run, item)}\n`;
+        }
         message += '\n';
     }
 
@@ -41,7 +43,7 @@ function formatMessage(failedRuns) {
 module.exports = async (failedRuns, apiToken, channel) => {
     const slack = new Slack(apiToken);
 
-    const text = formatMessage(failedRuns);
+    const text = await formatMessage(failedRuns);
 
-    await postMessage(slack, channel, text);
+    return postMessage(slack, channel, text);
 };

@@ -169,7 +169,7 @@ async function findFailedRuns(configs) {
         }
 
         const { actorId, taskId } = config;
-        failedRuns[actorId] = {
+        failedRuns[actorId || taskId] = {
             failedRuns: actorFailedRuns,
             actorId,
             taskId,

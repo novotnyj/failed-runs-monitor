@@ -119,9 +119,16 @@ async function getFailedRuns({ client, config, options }) {
         minDatasetItems = 1;
     }
 
-    const store = await Apify.openKeyValueStore('failed-runs-monitoring');
+    const env = await Apify.getEnv();
+    const { actorTaskId } = env;
+    // Todo: Remove in future, 2019-07-15
+    const legacyStore = await Apify.openKeyValueStore('failed-runs-monitoring');
+    const store = await Apify.openKeyValueStore(`failed-runs-monitoring${actorTaskId ? `-${actorTaskId}` : ''}`);
     const lastRunKey = taskId ? `task-${taskId.replace('/', '_')}` : actorId.replace('/', '_');
-    const loadedLastRun = await store.getValue(lastRunKey);
+    let loadedLastRun = await store.getValue(lastRunKey);
+    if (!loadedLastRun) {
+        loadedLastRun = await legacyStore.getValue(lastRunKey);
+    }
     const lastRun = loadedLastRun ? moment(loadedLastRun) : moment();
 
     log.debug(`Looking for failed runs since ${lastRun.toISOString()}`);
@@ -204,6 +211,8 @@ async function getFailedRuns({ client, config, options }) {
         offset += limit;
     }
 
+    // Todo: Remove in future, 2019-07-15
+    await legacyStore.setValue(lastRunKey, null);
     await store.setValue(lastRunKey, moment().utc().toISOString());
 
     return Object.values(failedRuns);

@@ -94,6 +94,10 @@ async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask)
             }
         }
         if (!shouldBeSkipped) {
+            log.debug(`Will not skip run ${run.id}`, {
+                actorInput: body,
+                inputMask,
+            });
             filteredRuns.push(run);
         }
     }
@@ -103,7 +107,7 @@ async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask)
 async function getFailedRuns({ client, config, options }) {
     const { actorId, taskId, isEmptyDatasetFailed, maxRunTimeSecs } = config;
     let { inputMask, schema, ignoreByInputMask } = config;
-    if (!inputMask && options.ignoredInput) {
+    if (!inputMask && options.inputMask) {
         ({ inputMask } = options);
     }
     if (!schema && options.schema) {

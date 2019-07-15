@@ -41,14 +41,14 @@
         "ignoredInput": {
             "title": "Ignored input",
             "description": "Runs that contain anything from ignored input will be skipped",
-            "type": "json",
+            "type": "object",
             "editor": "json",
             "nullable": true
         },
         "schema": {
             "title": "JSON schema",
             "description": "JSON schema to validate every dataset item with",
-            "type": "json",
+            "type": "object",
             "editor": "json",
             "nullable": true
         }

@@ -1,9 +1,11 @@
 const Apify = require('apify');
 const moment = require('moment');
+const _ = require('lodash');
 const { ACT_JOB_STATUSES } = require('apify-shared/consts');
 const { REASONS } = require('./const');
+const { checkSchema } = require('./schemaChecker');
 
-// const { log } = Apify.utils;
+const { log } = Apify.utils;
 
 const FAILED_STATUS = ACT_JOB_STATUSES.FAILED;
 const SUCCESS_STATUS = ACT_JOB_STATUSES.SUCCEEDED;
@@ -64,8 +66,40 @@ async function findRunningLongerThan(runs, timeout, store) {
     return result;
 }
 
-async function getFailedRuns({ client, config }) {
+async function filterRunsWithInput(client, runs, ignoredInput) {
+    const { keyValueStores } = client;
+    const filteredRuns = [];
+    for (const run of runs) {
+        const { defaultKeyValueStoreId } = run;
+        const actorInput = await keyValueStores.getRecord({ storeId: defaultKeyValueStoreId, key: 'INPUT' });
+        const { body } = actorInput;
+        let shouldBeSkipped = false;
+        for (const key of Object.keys(ignoredInput)) {
+            if (body[key] && _.isEqual(body[key], ignoredInput[key])) {
+                shouldBeSkipped = true;
+                log.debug(`Will skip run ${run.id} because of ignored input`, {
+                    actorInput: body,
+                    ignoredInput,
+                });
+                break;
+            }
+        }
+        if (!shouldBeSkipped) {
+            filteredRuns.push(run);
+        }
+    }
+    return filteredRuns;
+}
+
+async function getFailedRuns({ client, config, options }) {
     const { actorId, taskId, isEmptyDatasetFailed, maxRunTimeSecs } = config;
+    let { ignoredInput, schema } = config;
+    if (!ignoredInput && options.ignoredInput) {
+        ({ ignoredInput } = options);
+    }
+    if (!schema && options.schema) {
+        ({ schema } = options);
+    }
     let { minDatasetItems } = config;
 
     // Backward compatibility, remove in future 2019-03-19
@@ -78,15 +112,17 @@ async function getFailedRuns({ client, config }) {
     const loadedLastRun = await store.getValue(lastRunKey);
     const lastRun = loadedLastRun ? moment(loadedLastRun) : moment();
 
+    log.debug(`Looking for failed runs since ${lastRun.toISOString()}`);
+
     const { acts, tasks } = client;
     let endpoint;
-    const options = { desc: true };
+    const params = { desc: true };
     if (taskId && !actorId) {
         endpoint = tasks;
-        options.taskId = taskId;
+        params.taskId = taskId;
     } else {
         endpoint = acts;
-        options.actId = actorId;
+        params.actId = actorId;
     }
     const failedRuns = {};
     let offset = 0;
@@ -107,7 +143,7 @@ async function getFailedRuns({ client, config }) {
 
     while (true) {
         const response = await endpoint.listRuns({
-            ...options,
+            ...params,
             limit,
             offset,
         });
@@ -115,19 +151,40 @@ async function getFailedRuns({ client, config }) {
         if (items.length === 0) {
             break;
         }
-        const finishedRuns = items.filter((run) => {
+
+        let finishedRuns = items.filter((run) => {
             return run.finishedAt && moment(run.finishedAt).isSameOrAfter(lastRun);
         });
+
+        log.debug(`Found ${finishedRuns.length} finished runs`);
+        if (ignoredInput) {
+            finishedRuns = await filterRunsWithInput(client, finishedRuns, ignoredInput);
+        }
+
+        // Checks if datasets are not small
         if (minDatasetItems && minDatasetItems > 0) {
             const emptyRuns = await findRunsSmallDataset(client, finishedRuns, minDatasetItems);
             emptyRuns.forEach((run) => processRun(run, REASONS.SMALL_DATASET));
         }
+
+        // This will find long running runs and adds them to failed
         if (maxRunTimeSecs !== undefined && maxRunTimeSecs > 0) {
             const timeoutingRuns = await findRunningLongerThan(items, maxRunTimeSecs, store);
             timeoutingRuns.forEach((run) => processRun(run, REASONS.RUNNING_TOO_LONG));
         }
+
         const loadMore = finishedRuns.length === limit;
+
+        // This will add failed and timeouted runs to failed list
         finishedRuns.forEach(processFailedRun);
+
+        // check schema
+        if (schema) {
+            const failedRunsArray = Object.values(failedRuns);
+            const runsToCheck = finishedRuns.filter((run) => !failedRunsArray.find((item) => item.id === run.id));
+            const badSchema = await checkSchema(client, runsToCheck, schema);
+            badSchema.forEach((run) => processRun(run, REASONS.BAD_SCHEMA));
+        }
 
         if (!loadMore) {
             break;
@@ -152,7 +209,7 @@ async function getObjectName(client, actId, taskId) {
     }
 }
 
-async function findFailedRuns(configs) {
+async function findFailedRuns(configs, options) {
     const { client } = Apify;
 
     const failedRuns = {};
@@ -163,7 +220,7 @@ async function findFailedRuns(configs) {
         if (config.actorId && config.taskId) {
             throw new Error(`Cannot use both "actorId" and "taskId" in ${JSON.stringify(config)}`);
         }
-        const actorFailedRuns = await getFailedRuns({ client, config });
+        const actorFailedRuns = await getFailedRuns({ client, config, options });
         if (actorFailedRuns.length === 0) {
             continue;
         }

@@ -41,7 +41,11 @@ Example of the input:
     // Optional
     "slackChannel": "#actor-notifications",
     // Optional
-    "emails": ["john.doe@examle.com"]
+    "emails": ["john.doe@examle.com"],
+    // Optional
+    "ignoredInput": { "testRun": true },
+    // Optional
+    "schema": {}
 }
 ```
 
@@ -52,3 +56,11 @@ Config is an array of objects, where every object has these attributes:
 - `maxRunTimeSecs` - Integer, If provided, then runs running longer than `maxRunTimeSecs` are considered as failed
 
 Note: If you want to receive slack notifications then both `slackApiKey` and `slackChannel` have to provided.
+
+### Ignored input
+
+Use this option if you need some runs to be ignored by monitoring. Ie: you want to ignore test runs - add `testRun: true` to the input of your actor and set `ignoredInput` to `{ "testRun": true }` and this run will be skipped.
+
+### JSON Schema
+
+Every dataset item will be checked using JSON schema given in `schema`.

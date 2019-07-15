@@ -66,7 +66,7 @@ async function findRunningLongerThan(runs, timeout, store) {
     return result;
 }
 
-async function filterRunsWithInput(client, runs, ignoredInput) {
+async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask) {
     const { keyValueStores } = client;
     const filteredRuns = [];
     for (const run of runs) {
@@ -74,12 +74,21 @@ async function filterRunsWithInput(client, runs, ignoredInput) {
         const actorInput = await keyValueStores.getRecord({ storeId: defaultKeyValueStoreId, key: 'INPUT' });
         const { body } = actorInput;
         let shouldBeSkipped = false;
-        for (const key of Object.keys(ignoredInput)) {
-            if (body[key] && _.isEqual(body[key], ignoredInput[key])) {
+        for (const key of Object.keys(inputMask)) {
+            const contains = body[key] && _.isEqual(body[key], inputMask[key]);
+            if (contains && ignoreByInputMask) {
                 shouldBeSkipped = true;
                 log.debug(`Will skip run ${run.id} because of ignored input`, {
                     actorInput: body,
-                    ignoredInput,
+                    inputMask,
+                });
+                break;
+            }
+            if (!contains && !ignoreByInputMask) {
+                shouldBeSkipped = true;
+                log.debug(`Will skip run ${run.id} because of not matched input mask`, {
+                    actorInput: body,
+                    inputMask,
                 });
                 break;
             }
@@ -93,12 +102,15 @@ async function filterRunsWithInput(client, runs, ignoredInput) {
 
 async function getFailedRuns({ client, config, options }) {
     const { actorId, taskId, isEmptyDatasetFailed, maxRunTimeSecs } = config;
-    let { ignoredInput, schema } = config;
-    if (!ignoredInput && options.ignoredInput) {
-        ({ ignoredInput } = options);
+    let { inputMask, schema, ignoreByInputMask } = config;
+    if (!inputMask && options.ignoredInput) {
+        ({ inputMask } = options);
     }
     if (!schema && options.schema) {
         ({ schema } = options);
+    }
+    if (!ignoreByInputMask && options.ignoreByInputMask) {
+        ({ ignoreByInputMask } = options);
     }
     let { minDatasetItems } = config;
 
@@ -157,8 +169,8 @@ async function getFailedRuns({ client, config, options }) {
         });
 
         log.debug(`Found ${finishedRuns.length} finished runs`);
-        if (ignoredInput) {
-            finishedRuns = await filterRunsWithInput(client, finishedRuns, ignoredInput);
+        if (inputMask) {
+            finishedRuns = await filterRunsByInputMask(client, finishedRuns, inputMask, ignoreByInputMask);
         }
 
         // Checks if datasets are not small

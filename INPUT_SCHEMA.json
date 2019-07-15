@@ -38,12 +38,19 @@
             "uniqueItems": true,
             "example": [ "john.doe@example.com" ]
         },
-        "ignoredInput": {
-            "title": "Ignored input",
-            "description": "Runs that contain anything from ignored input will be skipped",
+        "inputMask": {
+            "title": "Input mask",
+            "description": "Check runs that contains anything from given JSON on input",
             "type": "object",
             "editor": "json",
             "nullable": true
+        },
+        "ignoreByInputMask": {
+            "title": "Ignore runs matched by input mask",
+            "description": "If checked then runs matched by input mask will be skipped",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": false
         },
         "schema": {
             "title": "JSON schema",

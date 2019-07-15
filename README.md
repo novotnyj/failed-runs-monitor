@@ -43,7 +43,9 @@ Example of the input:
     // Optional
     "emails": ["john.doe@examle.com"],
     // Optional
-    "ignoredInput": { "testRun": true },
+    "inputMask": { "testRun": true },
+    // Optional
+    "ignoreByInputMask": false,
     // Optional
     "schema": {}
 }
@@ -57,9 +59,11 @@ Config is an array of objects, where every object has these attributes:
 
 Note: If you want to receive slack notifications then both `slackApiKey` and `slackChannel` have to provided.
 
-### Ignored input
+### Input mask
 
-Use this option if you need some runs to be ignored by monitoring. Ie: you want to ignore test runs - add `testRun: true` to the input of your actor and set `ignoredInput` to `{ "testRun": true }` and this run will be skipped.
+Use this option to check only runs that contain something on input.
+
+This option can be used in combinanion with `ignoreByInputMask`. If `ignoreByInputMask` is set to true, than matched runs will be ignored. This is useful when you need to skip some testing runs.
 
 ### JSON Schema
 

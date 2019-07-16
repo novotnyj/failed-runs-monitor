@@ -74,10 +74,11 @@ async function getRecordWithRetry(stores, storeId, key) {
             return result;
         } catch (e) {
             lastError = e;
-            await Apify.utils.sleep(2 ** i);
+            await Apify.utils.sleep(200 * (2 ** i));
         }
     }
 
+    log.error('Failed to get kv record', { storeId, key });
     throw lastError;
 }
 

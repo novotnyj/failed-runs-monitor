@@ -66,12 +66,27 @@ async function findRunningLongerThan(runs, timeout, store) {
     return result;
 }
 
+async function getRecordWithRetry(stores, storeId, key) {
+    let lastError;
+    for (let i = 1; i < 9; i++) {
+        try {
+            const result = await stores.getRecord({ storeId, key });
+            return result;
+        } catch (e) {
+            lastError = e;
+            await Apify.utils.sleep(2 ** i);
+        }
+    }
+
+    throw lastError;
+}
+
 async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask) {
     const { keyValueStores } = client;
     const filteredRuns = [];
     for (const run of runs) {
         const { defaultKeyValueStoreId } = run;
-        const actorInput = await keyValueStores.getRecord({ storeId: defaultKeyValueStoreId, key: 'INPUT' });
+        const actorInput = await getRecordWithRetry(keyValueStores, defaultKeyValueStoreId, 'INPUT');
         const { body } = actorInput;
         let shouldBeSkipped = false;
         for (const key of Object.keys(inputMask)) {

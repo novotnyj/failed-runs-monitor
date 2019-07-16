@@ -91,7 +91,7 @@ async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask)
             actorInput = await getRecordWithRetry(keyValueStores, defaultKeyValueStoreId, 'INPUT');
         } catch (e) {
             // Most likely invalid input, we should check this run...
-            log.exception('Run with invalid input?', { run, e });
+            log.exception(e, 'Run with invalid input?', { run });
             filteredRuns.push(run);
             continue;
         }

@@ -68,7 +68,7 @@ async function findRunningLongerThan(runs, timeout, store) {
 
 async function getRecordWithRetry(stores, storeId, key) {
     let lastError;
-    for (let i = 1; i < 9; i++) {
+    for (let i = 1; i < 5; i++) {
         try {
             const result = await stores.getRecord({ storeId, key });
             return result;
@@ -78,7 +78,6 @@ async function getRecordWithRetry(stores, storeId, key) {
         }
     }
 
-    log.error('Failed to get kv record', { storeId, key });
     throw lastError;
 }
 
@@ -87,7 +86,15 @@ async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask)
     const filteredRuns = [];
     for (const run of runs) {
         const { defaultKeyValueStoreId } = run;
-        const actorInput = await getRecordWithRetry(keyValueStores, defaultKeyValueStoreId, 'INPUT');
+        let actorInput;
+        try {
+            actorInput = await getRecordWithRetry(keyValueStores, defaultKeyValueStoreId, 'INPUT');
+        } catch (e) {
+            // Most likely invalid input, we should check this run...
+            log.exception('Run with invalid input?', { run, e });
+            filteredRuns.push(run);
+            continue;
+        }
         const { body } = actorInput;
         let shouldBeSkipped = false;
         for (const key of Object.keys(inputMask)) {

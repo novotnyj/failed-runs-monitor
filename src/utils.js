@@ -48,7 +48,7 @@ function reasonToString(reason, actual, expected) {
         return 'Timed out';
     }
     if (reason === REASONS.BAD_SCHEMA) {
-        return `${actual} items does not match JSON schema`;
+        return `${actual} ${actual > 1 ? 'items' : 'item'} did not match JSON schema`;
     }
 
     throw new Error(`Unkown reason ${reason}`);

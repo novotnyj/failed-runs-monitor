@@ -40,14 +40,14 @@
         },
         "inputMask": {
             "title": "Input mask",
-            "description": "Check runs that contains anything from given JSON on input",
+            "description": "Check only those runs that contain anything from given JSON on their input",
             "type": "object",
             "editor": "json",
             "nullable": true,
             "example": { "testRun": true }
         },
         "ignoreByInputMask": {
-            "title": "Ignore runs matched by input mask",
+            "title": "Skip runs matched by input mask",
             "description": "If checked then runs matched by input mask will be skipped",
             "type": "boolean",
             "editor": "checkbox",

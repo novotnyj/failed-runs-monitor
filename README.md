@@ -1,6 +1,6 @@
 # Failed Runs Monitor
 
-This actor will let you know about failed and timed out runs of your actors or tasks via Slack or email. It could also notice you about successful runs with empty/small dataset or runs that are running for too long.
+This actor will let you know about failed or time outed runs of your actors and tasks via Slack or email. It can also notice you about successful runs with empty dataset, check JSON schema of dataset items, or about runs that are running for too long.
 
 You will receive message like this to your slack or email:
 ```
@@ -11,9 +11,10 @@ These runs have failed for actor "failing-actor":
 - failed-run-id-2 (Should have finished in 3 hours, running for 5 hours)
 - failed-run-id-3 (Failed)
 - failed-run-id-4 (Timed out)
+- failed-run-id-5 (9 items did not match JSON schema)
 ```
 
-Where `failedRunIdX` will be links to the details of failed runs.
+Where `failed-run-id-X` will be links to the details of failed runs.
 
 ## INPUT
 
@@ -61,10 +62,10 @@ Note: If you want to receive slack notifications then both `slackApiKey` and `sl
 
 ### Input mask
 
-Use this option to check only runs that contain something on input.
+You can use `inputMask` option to check only runs that contain something on input.
 
-This option can be used in combinanion with `ignoreByInputMask`. If `ignoreByInputMask` is set to true, than matched runs will be ignored. This is useful when you need to skip some testing runs.
+This option can be used in combinanion with `ignoreByInputMask`. If `ignoreByInputMask` is set to true, than matched runs will be ignored. This is useful when you need to skip testing runs.
 
 ### JSON Schema
 
-Every dataset item will be checked using JSON schema given in `schema`.
+Every item in dataset will be checked using JSON schema given in `schema`. Invalid items are reported in log and also saved to key-value store using this key `validation-errors-${run.id}`.

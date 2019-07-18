@@ -1,5 +1,6 @@
 const Apify = require('apify');
 const Ajv = require('ajv');
+const { validationErrorsKey } = require('./const');
 
 const ajv = new Ajv();
 
@@ -22,8 +23,8 @@ async function datasetForEach(client, datasetId, itemCallback) {
 }
 
 async function checkRunSchema(client, run, validator) {
-    const { defaultDatasetId } = run;
-    const key = `validation-errors-${run.id}`;
+    const { defaultDatasetId, id } = run;
+    const key = validationErrorsKey(id);
     const errors = [];
     let count = 0;
     await datasetForEach(client, defaultDatasetId, async (item) => {

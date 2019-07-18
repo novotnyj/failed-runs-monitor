@@ -1,5 +1,5 @@
 const Apify = require('apify');
-const { getRunUrl, reasonToString } = require('./utils');
+const { getRunUrl, reasonToEmailString } = require('./utils');
 
 const subject = 'Failed runs at apify.com...';
 
@@ -7,7 +7,7 @@ async function formatMessage(failedRuns) {
     let message = `Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor/task' : 'actors/tasks'} with failed runs.<br/><br/>`;
     const runFormatter = async (item, run) => {
         const { reason, actual, expected } = run;
-        const reasonString = reasonToString(reason, actual, expected);
+        const reasonString = await reasonToEmailString(reason, actual, expected, run);
         const runUrl = await getRunUrl(item.actorId, item.taskId, run.id);
         return `<li><a href="${runUrl}">${run.id}</a>${reasonString !== '' ? ` (${reasonString})` : ''}</li>`;
     };

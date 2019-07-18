@@ -1,9 +1,10 @@
 const Apify = require('apify');
 const humanizeDuration = require('humanize-duration');
-const { REASONS } = require('./const');
+const { REASONS, validationErrorsKey } = require('./const');
 
 const { client } = Apify;
 const { tasks, acts } = client;
+const env = Apify.getEnv();
 
 const taskCache = {};
 const actorCache = {};
@@ -32,6 +33,12 @@ async function getRunUrl(actId, taskId, runId) {
     return `https://my.apify.com/actors/${actor.id}#/runs/${runId}`;
 }
 
+function getValidationDetailsUrl(runId) {
+    const { defaultKeyValueStoreId } = env;
+    const key = validationErrorsKey(runId);
+    return `https://api.apify.com/v2/key-value-stores/${defaultKeyValueStoreId}/records/${key}?disableRedirect=true`;
+}
+
 function reasonToString(reason, actual, expected) {
     if (reason === REASONS.SMALL_DATASET) {
         return `More than ${expected} dataset items expected, only ${actual} found`;
@@ -54,4 +61,22 @@ function reasonToString(reason, actual, expected) {
     throw new Error(`Unkown reason ${reason}`);
 }
 
-module.exports = { getRunUrl, reasonToString };
+async function reasonToSlackString(reason, actual, expected, run) {
+    if (reason === REASONS.BAD_SCHEMA) {
+        const link = getValidationDetailsUrl(run.id);
+        return `<${link}|${actual} ${actual > 1 ? 'items' : 'item'}> did not match JSON schema`;
+    }
+
+    return reasonToString(reason, actual, expected);
+}
+
+async function reasonToEmailString(reason, actual, expected, run) {
+    if (reason === REASONS.BAD_SCHEMA) {
+        const link = getValidationDetailsUrl(run.id);
+        return `<a href="${link}">${actual} ${actual > 1 ? 'items' : 'item'}</a> did not match JSON schema`;
+    }
+
+    return reasonToString(reason, actual, expected);
+}
+
+module.exports = { getRunUrl, reasonToString, reasonToSlackString, reasonToEmailString };

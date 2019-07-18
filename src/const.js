@@ -6,4 +6,8 @@ const REASONS = {
     BAD_SCHEMA: 'bad_schema',
 };
 
-module.exports = { REASONS };
+function validationErrorsKey(runId) {
+    return `validation-errors-${runId}`;
+}
+
+module.exports = { REASONS, validationErrorsKey };

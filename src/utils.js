@@ -41,7 +41,7 @@ function getValidationDetailsUrl(runId) {
 
 function reasonToString(reason, actual, expected) {
     if (reason === REASONS.SMALL_DATASET) {
-        return `More than ${expected} dataset items expected, only ${actual} found`;
+        return `More than ${expected} dataset items expected, ${actual > 0 ? `only ${actual}` : '0'} found`;
     }
     if (reason === REASONS.RUNNING_TOO_LONG) {
         const formattedExpected = humanizeDuration(expected, { largest: 2 });

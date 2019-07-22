@@ -95,6 +95,11 @@ async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask)
             filteredRuns.push(run);
             continue;
         }
+        if (!actorInput || !actorInput.body) {
+            log.error('Could not get input', { run });
+            filteredRuns.push(run);
+            continue;
+        }
         const { body } = actorInput;
         let shouldBeSkipped = false;
         for (const key of Object.keys(inputMask)) {

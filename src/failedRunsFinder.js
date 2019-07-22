@@ -96,8 +96,8 @@ async function filterRunsByInputMask(client, runs, inputMask, ignoreByInputMask)
             continue;
         }
         if (!actorInput || !actorInput.body) {
-            log.error('Could not get input', { run });
-            filteredRuns.push(run);
+            // No input and we have mask - ignore it
+            log.debug('No input', { run });
             continue;
         }
         const { body } = actorInput;

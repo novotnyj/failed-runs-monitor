@@ -79,4 +79,4 @@ async function reasonToEmailString(reason, actual, expected, run) {
     return reasonToString(reason, actual, expected);
 }
 
-module.exports = { getRunUrl, reasonToString, reasonToSlackString, reasonToEmailString };
+module.exports = { getRunUrl, reasonToString, reasonToSlackString, reasonToEmailString, getActor, getTask };

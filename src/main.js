@@ -23,7 +23,7 @@ Apify.main(async () => {
 
         actorConfigs = config.filter((item) => {
             if (item.actorId) {
-                return (item.acorId === actorId || item.acorId.includes(name));
+                return (item.actorId === actorId || item.actorId.includes(name));
             }
             if (item.taskId && taskName) {
                 return item.taskId === actorTaskId || item.taskId.includes(taskName);

@@ -29,6 +29,9 @@ Apify.main(async () => {
                 return item.taskId === actorTaskId || item.taskId.includes(taskName);
             }
         });
+        if (!actorConfigs) {
+            actorConfigs = actorTaskId ? [{ taskId: actorTaskId }] : [{ actorId }];
+        }
     }
 
     const failedRuns = await failedRunsFinder(actorConfigs || config, { schema, ignoreByInputMask, inputMask });

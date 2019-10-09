@@ -265,8 +265,19 @@ async function getObjectName(client, actId, taskId) {
 async function findFailedRuns(configs, options) {
     const { client } = Apify;
 
-    const failedRuns = {};
+    const tmpKey = 'FAILED_RUNS_TMP';
+    const failedRuns = await Apify.getValue(tmpKey) || {};
+
+    let migrating = false;
+    Apify.events.on('migrating', () => {
+        migrating = true;
+    });
+
     for (const config of configs) {
+        if (migrating) {
+            log.info('Waiting for migration to happen...');
+            await Apify.utils.sleep(10 * 60 * 1000);
+        }
         if (!config.actorId && !config.taskId) {
             throw new Error(`Missing "actorId" or "taskId" property in ${JSON.stringify(config)}`);
         }
@@ -286,6 +297,7 @@ async function findFailedRuns(configs, options) {
             name: await getObjectName(client, actorId, taskId),
             checkedAt: moment().toISOString(),
         };
+        await Apify.setValue(tmpKey, failedRuns);
     }
 
     if (Object.keys(failedRuns).length === 0) {

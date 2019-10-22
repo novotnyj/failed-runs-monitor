@@ -30,7 +30,10 @@ Apify.main(async () => {
             }
         });
         if (!actorConfigs) {
-            actorConfigs = actorTaskId ? [{ taskId: actorTaskId }] : [{ actorId }];
+            const { minDatasetItems } = input;
+            actorConfigs = actorTaskId
+                ? [{ taskId: actorTaskId, minDatasetItems }]
+                : [{ actorId, minDatasetItems }];
         }
     }
 

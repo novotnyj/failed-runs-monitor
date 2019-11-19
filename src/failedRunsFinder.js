@@ -161,7 +161,7 @@ async function getFailedRuns({ client, config, options }) {
     if (!loadedLastRun) {
         loadedLastRun = await legacyStore.getValue(lastRunKey);
     }
-    const lastRun = loadedLastRun ? moment(loadedLastRun) : moment();
+    const lastRun = loadedLastRun ? moment(loadedLastRun) : moment().subtract(7, 'days');
 
     log.debug(`Looking for failed runs since ${lastRun.toISOString()}`);
 

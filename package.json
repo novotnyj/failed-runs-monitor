@@ -8,7 +8,7 @@
 		"apify": "^0.15.0",
 		"apify-shared": "^0.1.22",
 		"humanize-duration": "^3.18.0",
-		"lodash": "^4.17.14",
+		"lodash": "^4.17.19",
 		"moment": "^2.24.0",
 		"slack-node": "^0.1.8"
 	},

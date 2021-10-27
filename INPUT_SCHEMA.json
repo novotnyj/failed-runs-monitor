@@ -14,6 +14,14 @@
             "nullable": false,
             "minItems": 1
         },
+        "minDatasetItemsPercent": {
+            "title": "Min dataset percent",
+            "type": "integer",
+            "description": "Dataset size will be compared only to the percent of minDatasetItems",
+            "default": 100,
+            "maximum": 100,
+            "unit": "%"
+        },
         "slackApiKey": {
             "title": "Slack API key",
             "description": "API key to your Slack",
@@ -29,6 +37,13 @@
             "editor": "textfield",
             "example": "#actor-notifications",
             "nullable": true
+        },
+        "smallDatasetNotifications": {
+            "title": "Notify small datasets",
+            "description": "If checked then notifications for small datasets use @channel mention on slack and are added to email",
+            "type": "boolean",
+            "editor": "checkbox",
+            "default": true
         },
         "emails": {
             "title": "Emails",

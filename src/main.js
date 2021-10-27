@@ -6,7 +6,21 @@ const { getActor, getTask } = require('./utils');
 
 Apify.main(async () => {
     const input = await Apify.getValue('INPUT');
-    const { config, slackApiKey, slackChannel, emails, schema, ignoreByInputMask, inputMask, resource, eventData } = input;
+    const {
+        config,
+        slackApiKey,
+        slackChannel,
+        emails,
+        schema,
+        ignoreByInputMask,
+        inputMask,
+        resource,
+        eventData,
+        minDatasetItemsPercent,
+        smallDatasetNotifications,
+    } = input;
+
+    const minDatasetItemsFactor = (minDatasetItemsPercent || 100) / 100;
 
     Apify.utils.log.info(`Using log level ${Apify.utils.log.getLevel()}`);
 
@@ -37,7 +51,13 @@ Apify.main(async () => {
         }
     }
 
-    const failedRuns = await failedRunsFinder(actorConfigs || config, { schema, ignoreByInputMask, inputMask });
+    const options = {
+        schema,
+        ignoreByInputMask,
+        inputMask,
+        minDatasetItemsFactor: minDatasetItemsFactor || 1,
+    };
+    let failedRuns = await failedRunsFinder(actorConfigs || config, options);
     await Apify.setValue('OUTPUT', failedRuns);
     if (failedRuns.length === 0) {
         console.log('Done.');
@@ -45,11 +65,11 @@ Apify.main(async () => {
     }
 
     if (slackApiKey && slackChannel) {
-        await slackSender(failedRuns, slackApiKey, slackChannel);
+        await slackSender(failedRuns, slackApiKey, slackChannel, { smallDatasetNotifications });
     }
 
     if (emails && emails.length > 0) {
-        await mailSender(failedRuns, emails);
+        await mailSender(failedRuns, emails, { smallDatasetNotifications });
     }
 
     console.log('Done.');

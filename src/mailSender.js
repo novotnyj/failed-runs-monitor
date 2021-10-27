@@ -1,4 +1,5 @@
 const Apify = require('apify');
+const { REASONS } = require('./const');
 const { getRunUrl, reasonToEmailString } = require('./utils');
 
 const subject = 'Failed runs at apify.com...';
@@ -28,7 +29,10 @@ async function formatMessage(failedRuns) {
     return message;
 }
 
-async function sendEmail(failedRuns, emails) {
+async function sendEmail(failedRuns, emails, { smallDatasetNotifications }) {
+    if (!smallDatasetNotifications) {
+        failedRuns = failedRuns.filter((item) => item.reason !== REASONS.SMALL_DATASET);
+    }
     const message = await formatMessage(failedRuns);
 
     return Apify.call('apify/send-mail', {

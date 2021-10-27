@@ -1,4 +1,5 @@
 const Slack = require('slack-node');
+const { REASONS } = require('./const');
 const { getRunUrl, reasonToSlackString } = require('./utils');
 
 async function postMessage(slack, channel, text) {
@@ -16,8 +17,14 @@ async function postMessage(slack, channel, text) {
     });
 }
 
-async function formatMessage(failedRuns) {
-    let message = `<!channel> Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor/task' : 'actors/tasks'} with failed runs.\n\n`;
+async function formatMessage(failedRuns, { smallDatasetNotifications }) {
+    // Mention channel only if smallDatasetNotifications is true or some of the runs failed for other reason then SMALL_DATASET
+    const mentionChannel = smallDatasetNotifications
+        ? true
+        : failedRuns.any(({ reason }) => reason !== REASONS.SMALL_DATASET);
+
+    let message = `${mentionChannel ? '<!channel> ' : ''}`;
+    message += `Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor/task' : 'actors/tasks'} with failed runs.\n\n`;
     const runFormatter = async (run, item) => {
         const { reason, actual, expected } = run;
         const reasonString = await reasonToSlackString(reason, actual, expected, run);
@@ -40,10 +47,10 @@ async function formatMessage(failedRuns) {
     return message;
 }
 
-module.exports = async (failedRuns, apiToken, channel) => {
+module.exports = async (failedRuns, apiToken, channel, { smallDatasetNotifications }) => {
     const slack = new Slack(apiToken);
 
-    const text = await formatMessage(failedRuns);
+    const text = await formatMessage(failedRuns, { smallDatasetNotifications });
 
     return postMessage(slack, channel, text);
 };

@@ -58,7 +58,7 @@ async function findRunningLongerThan(runs, timeoutSecs, contextStore) {
         const { id, startedAt } = run;
         const now = moment().utc();
         const startedAtMoment = moment(startedAt);
-        const expectedFinish = moment(startedAt).add(timeout, 'seconds');
+        const expectedFinish = moment(startedAt).add(timeoutSecs, 'seconds');
 
         if (now.isAfter(expectedFinish)) {
             const lastNoticedAt = await contextStore.getValue(`${id}-long`);

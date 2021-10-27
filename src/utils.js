@@ -1,9 +1,10 @@
 const Apify = require('apify');
+const { Configuration } = require('apify/build/configuration');
 const humanizeDuration = require('humanize-duration');
 const { REASONS, validationErrorsKey } = require('./const');
 
-const { client } = Apify;
-const { tasks, acts } = client;
+const config = Configuration.getGlobalConfig();
+const client = config.getClient();
 const env = Apify.getEnv();
 
 const taskCache = {};
@@ -11,14 +12,14 @@ const actorCache = {};
 
 async function getTask(taskId) {
     if (!taskCache[taskId]) {
-        taskCache[taskId] = await tasks.getTask({ taskId });
+        taskCache[taskId] = await client.task(taskId).get();
     }
     return taskCache[taskId];
 }
 
 async function getActor(actId) {
     if (!actorCache[actId]) {
-        actorCache[actId] = await acts.getAct({ actId });
+        actorCache[actId] = await client.actor(actId).get();
     }
 
     return actorCache[actId];

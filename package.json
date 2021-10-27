@@ -5,8 +5,8 @@
 	"main": "main.js",
 	"dependencies": {
 		"ajv": "^6.10.1",
-		"apify": "^0.15.0",
-		"apify-shared": "^0.1.22",
+		"apify": "^2.0.0",
+		"apify-shared": "^0.7.0",
 		"humanize-duration": "^3.18.0",
 		"lodash": "^4.17.14",
 		"moment": "^2.24.0",

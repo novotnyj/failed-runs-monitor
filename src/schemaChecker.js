@@ -1,18 +1,20 @@
 const Apify = require('apify');
 const Ajv = require('ajv');
+const { Configuration } = require('apify/build/configuration');
 const { validationErrorsKey } = require('./const');
 
 const ajv = new Ajv();
+const config = Configuration.getGlobalConfig();
+const client = config.getClient();
 
 const { log } = Apify.utils;
 
-async function datasetForEach(client, datasetId, itemCallback) {
-    const { datasets } = client;
+async function datasetForEach(datasetId, itemCallback) {
     let offset = 0;
     const limit = 50000;
 
     while (true) {
-        const page = await datasets.getItems({ datasetId, clean: true, offset, limit, skipHidden: true });
+        const page = await client.dataset(datasetId).listItems({ clean: true, offset, limit, skipHidden: true });
         offset += limit;
         const { items } = page;
         if (items.length === 0) break;
@@ -22,12 +24,12 @@ async function datasetForEach(client, datasetId, itemCallback) {
     }
 }
 
-async function checkRunSchema(client, run, validator) {
+async function checkRunSchema(run, validator) {
     const { defaultDatasetId, id } = run;
     const key = validationErrorsKey(id);
     const errors = [];
     let count = 0;
-    await datasetForEach(client, defaultDatasetId, async (item) => {
+    await datasetForEach(defaultDatasetId, async (item) => {
         try {
             await validator(item);
             log.debug('Schema is valid', { item });
@@ -52,13 +54,13 @@ async function checkRunSchema(client, run, validator) {
     return count;
 }
 
-async function checkSchema(client, runs, schema) {
+async function checkSchema(runs, schema) {
     const result = [];
     schema.$async = true;
     const validator = ajv.compile(schema);
 
     const processRun = async (run) => {
-        const count = await checkRunSchema(client, run, validator);
+        const count = await checkRunSchema(run, validator);
         if (count > 0) {
             result.push({
                 ...run,

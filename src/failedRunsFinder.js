@@ -28,7 +28,7 @@ async function findRunsSmallDataset(runs, minDatasetItems) {
         // Run hasn't succeeded - could still be running, or failed/timeouted
         if (run.status !== SUCCESS_STATUS) continue;
 
-        const dataset = await client.datasets.dateset(run.defaultDatasetId).get();
+        const dataset = await client.datasets.dataset(run.defaultDatasetId).get();
         if (dataset.cleanItemCount < minDatasetItems) {
             result.push({
                 ...run,

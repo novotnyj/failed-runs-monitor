@@ -20,20 +20,25 @@ const TIMEOUTED_STATUS = ACT_JOB_STATUSES.TIMED_OUT;
  *
  * @param {[Object]} runs - List of runs to check
  * @param {Number} minDatasetItems - minimal count of items that should be in dataset
+ * @param {Number} minDatasetItemsFactor -
  * @returns {[Object]} - list of runs where dataset was smaller then minDatasetItems
  */
-async function findRunsSmallDataset(runs, minDatasetItems) {
+async function findRunsSmallDataset(runs, minDatasetItems, minDatasetItemsFactor) {
     const result = [];
     for (const run of runs) {
         // Run hasn't succeeded - could still be running, or failed/timeouted
         if (run.status !== SUCCESS_STATUS) continue;
 
-        const dataset = await client.dataset(run.defaultDatasetId).get();
-        if (dataset.cleanItemCount < minDatasetItems) {
+        const dataset = await client.dateset(run.defaultDatasetId).get();
+        const minimalItemsCount = Math.floor(minDatasetItems * minDatasetItemsFactor);
+        if (dataset.cleanItemCount <= minimalItemsCount) {
             result.push({
-                ...run,
-                expected: minDatasetItems,
-                actual: dataset.cleanItemCount,
+                run: {
+                    ...run,
+                    expected: minimalItemsCount,
+                    actual: dataset.cleanItemCount,
+                },
+                reason: dataset.cleanItemCount === 0 ? REASONS.EMPTY_DATASET : REASONS.SMALL_DATASET,
             });
         }
     }
@@ -165,6 +170,7 @@ async function getFailedRuns({ config, options }) {
         ({ ignoreByInputMask } = options);
     }
     let { minDatasetItems } = config;
+    const { minDatasetItemsFactor } = options;
 
     // Backward compatibility, remove in future 2019-03-19
     if (isEmptyDatasetFailed && minDatasetItems === undefined) {
@@ -217,8 +223,8 @@ async function getFailedRuns({ config, options }) {
 
         // Checks if datasets are not small
         if (minDatasetItems && minDatasetItems > 0) {
-            const emptyRuns = await findRunsSmallDataset(finishedRuns, minDatasetItems);
-            emptyRuns.forEach((run) => processRun(run, REASONS.SMALL_DATASET));
+            const emptyRuns = await findRunsSmallDataset(finishedRuns, minDatasetItems, minDatasetItemsFactor);
+            emptyRuns.forEach(({ run, reason }) => processRun(run, reason));
         }
 
         // This will find long running runs and adds them to failed

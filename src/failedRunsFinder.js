@@ -40,6 +40,13 @@ async function findRunsSmallDataset(runs, minDatasetItems, minDatasetItemsFactor
                 },
                 reason: dataset.cleanItemCount === 0 ? REASONS.EMPTY_DATASET : REASONS.SMALL_DATASET,
             });
+        } else {
+            log.info('Dataset check ok', {
+                minimalItemsCount,
+                cleanItemCount: dataset.cleanItemCount,
+                datasetId: run.defaultDatasetId,
+                runId: run.id,
+            });
         }
     }
 
@@ -80,6 +87,8 @@ async function findRunningLongerThan(runs, timeoutSecs, contextStore) {
                 expected: timeoutSecs * 1000,
                 actual: now.valueOf() - startedAtMoment.valueOf(),
             });
+        } else {
+            log.info('Run time check ok', { runId: run.id, expectedFinish: expectedFinish.toISOString() });
         }
     }
 

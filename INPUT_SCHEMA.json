@@ -15,7 +15,7 @@
             "minItems": 1
         },
         "minDatasetItemsPercent": {
-            "title": "Min dataset percent",
+            "title": "Min dataset size percent",
             "type": "integer",
             "description": "Dataset size will be compared only to the percent of minDatasetItems",
             "default": 100,

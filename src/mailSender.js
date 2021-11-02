@@ -31,7 +31,7 @@ async function formatMessage(failedRuns) {
 
 async function sendEmail(failedRuns, emails, { smallDatasetNotifications }) {
     if (!smallDatasetNotifications) {
-        failedRuns = failedRuns.filter((item) => item.reason !== REASONS.SMALL_DATASET);
+        failedRuns = failedRuns.filter(({ reason }) => reason !== REASONS.SMALL_DATASET);
     }
     const message = await formatMessage(failedRuns);
 

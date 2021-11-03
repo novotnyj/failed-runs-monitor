@@ -31,7 +31,17 @@ async function findRunsSmallDataset(runs, minDatasetItems, minDatasetItemsFactor
 
         const dataset = await client.dataset(run.defaultDatasetId).get();
         const minimalItemsCount = Math.floor(minDatasetItems * minDatasetItemsFactor);
+
+        const logItemInfo = {
+            minDatasetItemsFactor,
+            minDatasetItems,
+            cleanItemCount: dataset.cleanItemCount,
+            datasetId: run.defaultDatasetId,
+            runId: run.id,
+        };
+
         if (dataset.cleanItemCount <= minimalItemsCount) {
+            log.info('Dataset check failed',logItemInfo);
             result.push({
                 run: {
                     ...run,
@@ -41,12 +51,7 @@ async function findRunsSmallDataset(runs, minDatasetItems, minDatasetItemsFactor
                 reason: dataset.cleanItemCount === 0 ? REASONS.EMPTY_DATASET : REASONS.SMALL_DATASET,
             });
         } else {
-            log.info('Dataset check ok', {
-                minimalItemsCount,
-                cleanItemCount: dataset.cleanItemCount,
-                datasetId: run.defaultDatasetId,
-                runId: run.id,
-            });
+            log.info('Dataset check ok', logItemInfo);
         }
     }
 
@@ -72,6 +77,12 @@ async function findRunningLongerThan(runs, timeoutSecs, contextStore) {
         const startedAtMoment = moment(startedAt);
         const expectedFinish = moment(startedAt).add(timeoutSecs, 'seconds');
 
+        const logItemInfo = {
+            runId: run.id,
+            runningForHours: now.diff(startedAtMoment, 'hours', true),
+            expectedFinish: expectedFinish.toISOString(),
+        };
+
         if (now.isAfter(expectedFinish)) {
             const lastNoticedAt = await contextStore.getValue(`${id}-long`);
             if (lastNoticedAt) {
@@ -87,8 +98,9 @@ async function findRunningLongerThan(runs, timeoutSecs, contextStore) {
                 expected: timeoutSecs * 1000,
                 actual: now.valueOf() - startedAtMoment.valueOf(),
             });
+            log.info('Run time check failed', logItemInfo);
         } else {
-            log.info('Run time check ok', { runId: run.id, expectedFinish: expectedFinish.toISOString() });
+            log.info('Run time check ok', logItemInfo);
         }
     }
 

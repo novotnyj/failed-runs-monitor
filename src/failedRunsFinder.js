@@ -79,7 +79,7 @@ async function findRunningLongerThan(runs, timeoutSecs, contextStore) {
 
         const logItemInfo = {
             runId: run.id,
-            runningForHours: now.diff(startedAtMoment, 'hours', true),
+            runningForHours: now.diff(startedAtMoment, 'hours', true).toFixed(2),
             expectedFinish: expectedFinish.toISOString(),
         };
 

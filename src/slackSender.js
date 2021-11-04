@@ -21,7 +21,7 @@ async function formatMessage(failedRuns, { smallDatasetNotifications }) {
     // Mention channel only if smallDatasetNotifications is true or some of the runs failed for other reason then SMALL_DATASET
     const mentionChannel = smallDatasetNotifications
         ? true
-        : failedRuns.any(({ reason }) => reason !== REASONS.SMALL_DATASET);
+        : failedRuns.some(({ reason }) => reason !== REASONS.SMALL_DATASET);
 
     let message = `${mentionChannel ? '<!channel> ' : ''}`;
     message += `Found ${failedRuns.length} ${failedRuns.length === 1 ? 'actor/task' : 'actors/tasks'} with failed runs.\n\n`;

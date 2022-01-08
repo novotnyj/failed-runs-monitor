@@ -28,10 +28,10 @@ async function getActor(actId) {
 async function getRunUrl(actId, taskId, runId) {
     if (taskId) {
         const task = await getTask(taskId);
-        return `https://console.apify.com/tasks/${task.id}#/runs/${runId}`;
+        return `https://console.apify.com/tasks/${task.id}/runs/${runId}`;
     }
     const actor = await getActor(actId);
-    return `https://console.apify.com/actors/${actor.id}#/runs/${runId}`;
+    return `https://console.apify.com/actors/${actor.id}/runs/${runId}`;
 }
 
 function getValidationDetailsUrl(runId) {

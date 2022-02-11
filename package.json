@@ -4,7 +4,7 @@
 	"description": "This is a boilerplate of an Apify actor.",
 	"main": "main.js",
 	"dependencies": {
-		"ajv": "^6.10.1",
+		"ajv": "^6.12.3",
 		"apify": "^2.0.0",
 		"apify-shared": "^0.7.0",
 		"humanize-duration": "^3.18.0",

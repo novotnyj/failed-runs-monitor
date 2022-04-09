@@ -9,7 +9,7 @@
 		"apify-shared": "^0.7.0",
 		"humanize-duration": "^3.18.0",
 		"lodash": "^4.17.14",
-		"moment": "^2.24.0",
+		"moment": "^2.29.2",
 		"slack-node": "^0.1.8"
 	},
 	"devDependencies": {},

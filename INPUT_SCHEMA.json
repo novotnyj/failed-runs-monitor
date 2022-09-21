@@ -7,7 +7,7 @@
         "config": {
             "title": "Configuration",
             "description": "actorId - ID of actor, minDatasetItems - consider run with less items in dataset as failed, maxRunTimeSecs - consider actor runnning longer than this as failed",
-            "prefill": [{ "actorId": "XXX", "minDatasetItems": 0, "maxRunTimeSecs": 3600 }],
+            "prefill": [{ "actorId": "apify/web-scraper", "minDatasetItems": 0, "maxRunTimeSecs": 3600 }],
             "example": [{ "actorId": "actorId", "minDatasetItems": 0, "maxRunTimeSecs": 3600 }],
             "type": "array",
             "editor": "json",

@@ -4,13 +4,13 @@
 	"description": "This is a boilerplate of an Apify actor.",
 	"main": "main.js",
 	"dependencies": {
-		"ajv": "^6.10.1",
+        "@slack/web-api": "^7.9.1",
+        "ajv": "^6.10.1",
 		"apify": "^2.0.0",
 		"apify-shared": "^0.7.0",
 		"humanize-duration": "^3.18.0",
 		"lodash": "^4.17.14",
-		"moment": "^2.24.0",
-		"slack-node": "^0.1.8"
+		"moment": "^2.24.0"
 	},
 	"devDependencies": {},
 	"scripts": {

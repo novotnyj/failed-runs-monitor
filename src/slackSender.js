@@ -1,19 +1,11 @@
-const Slack = require('slack-node');
+const { WebClient } = require('@slack/web-api');
 const { REASONS } = require('./const');
 const { getRunUrl, reasonToSlackString } = require('./utils');
 
 async function postMessage(slack, channel, text) {
-    return new Promise((resolve, reject) => {
-        slack.api('chat.postMessage', {
-            text,
-            channel,
-        }, (err, response) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(response);
-            }
-        });
+    return await slack.chat.postMessage({
+        channel,
+        text,
     });
 }
 
@@ -48,7 +40,7 @@ async function formatMessage(failedRuns, { smallDatasetNotifications }) {
 }
 
 module.exports = async (failedRuns, apiToken, channel, { smallDatasetNotifications }) => {
-    const slack = new Slack(apiToken);
+    const slack = new WebClient(apiToken);
 
     const text = await formatMessage(failedRuns, { smallDatasetNotifications });
 

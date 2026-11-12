@@ -9,7 +9,7 @@ async function formatMessage(failedRuns) {
     const runFormatter = async (item, run) => {
         const { reason, actual, expected } = run;
         const reasonString = await reasonToEmailString(reason, actual, expected, run);
-        const runUrl = await getRunUrl(item.actorId, item.taskId, run.id);
+        const runUrl = getRunUrl(run);
         return `<li><a href="${runUrl}">${run.id}</a>${reasonString !== '' ? ` (${reasonString})` : ''}</li>`;
     };
     for (const item of failedRuns) {

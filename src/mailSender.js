@@ -35,11 +35,16 @@ async function sendEmail(failedRuns, emails, { smallDatasetNotifications }) {
     }
     const message = await formatMessage(failedRuns);
 
-    return Actor.call('apify/send-mail', {
+    const run = await Actor.call('apify/send-mail', {
         to: emails.join(', '),
         subject,
         html: message,
     }, { log: null });
+    // SDK v2 threw on a failed call, v3 does not; keep failing the monitor run so a lost email is noticed
+    if (run.status !== 'SUCCEEDED') {
+        throw new Error(`apify/send-mail run ${run.id} finished with status ${run.status}`);
+    }
+    return run;
 }
 
 module.exports = sendEmail;

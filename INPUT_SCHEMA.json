@@ -27,6 +27,7 @@
             "description": "API key to your Slack",
             "type": "string",
             "editor": "textfield",
+            "isSecret": true,
             "example": "my-secret-key",
             "nullable": true
         },

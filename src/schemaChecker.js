@@ -1,13 +1,9 @@
-const Apify = require('apify');
+const { Actor, log } = require('apify');
 const Ajv = require('ajv');
-const { Configuration } = require('apify/build/configuration');
 const { validationErrorsKey } = require('./const');
 
 const ajv = new Ajv();
-const config = Configuration.getGlobalConfig();
-const client = config.getClient();
-
-const { log } = Apify.utils;
+const client = Actor.apifyClient;
 
 async function datasetForEach(datasetId, itemCallback) {
     let offset = 0;
@@ -48,7 +44,7 @@ async function checkRunSchema(run, validator) {
     });
 
     if (errors.length > 0) {
-        await Apify.setValue(key, errors);
+        await Actor.setValue(key, errors);
     }
 
     return count;

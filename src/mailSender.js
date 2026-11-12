@@ -1,4 +1,4 @@
-const Apify = require('apify');
+const { Actor } = require('apify');
 const { REASONS } = require('./const');
 const { getRunUrl, reasonToEmailString } = require('./utils');
 
@@ -35,7 +35,7 @@ async function sendEmail(failedRuns, emails, { smallDatasetNotifications }) {
     }
     const message = await formatMessage(failedRuns);
 
-    return Apify.call('apify/send-mail', {
+    return Actor.call('apify/send-mail', {
         to: emails.join(', '),
         subject,
         html: message,

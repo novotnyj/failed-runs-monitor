@@ -4,15 +4,14 @@
 	"description": "This is a boilerplate of an Apify actor.",
 	"main": "main.js",
 	"dependencies": {
-        "@slack/web-api": "^7.9.1",
-        "ajv": "^6.10.1",
-		"apify": "^2.0.0",
+		"@slack/web-api": "^7.9.1",
+		"ajv": "^6.10.1",
+		"apify": "^3.7.2",
 		"apify-shared": "^0.7.0",
 		"humanize-duration": "^3.18.0",
 		"lodash": "^4.17.14",
 		"moment": "^2.24.0"
 	},
-	"devDependencies": {},
 	"scripts": {
 		"start": "node ./src/main.js",
 		"test": "echo \"Error: no test specified\" && exit 1"

@@ -1,11 +1,11 @@
-const Apify = require('apify');
+const { Actor, log } = require('apify');
 const failedRunsFinder = require('./failedRunsFinder');
 const slackSender = require('./slackSender');
 const mailSender = require('./mailSender');
 const { getActor, getTask } = require('./utils');
 
-Apify.main(async () => {
-    const input = await Apify.getValue('INPUT');
+Actor.main(async () => {
+    const input = await Actor.getInput();
     const {
         config,
         slackApiKey,
@@ -22,7 +22,7 @@ Apify.main(async () => {
 
     const minDatasetItemsFactor = (minDatasetItemsPercent || 100) / 100;
 
-    Apify.utils.log.info(`Using log level ${Apify.utils.log.getLevel()}`);
+    log.info(`Using log level ${log.getLevel()}`);
 
     let actorConfigs;
     if (resource && eventData) {
@@ -58,7 +58,7 @@ Apify.main(async () => {
         minDatasetItemsFactor: minDatasetItemsFactor || 1,
     };
     let failedRuns = await failedRunsFinder(actorConfigs || config, options);
-    await Apify.setValue('OUTPUT', failedRuns);
+    await Actor.setValue('OUTPUT', failedRuns);
     if (failedRuns.length === 0) {
         console.log('Done.');
         return;

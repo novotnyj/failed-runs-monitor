@@ -1,11 +1,9 @@
-const Apify = require('apify');
-const { Configuration } = require('apify/build/configuration');
+const { Actor } = require('apify');
 const humanizeDuration = require('humanize-duration');
 const { REASONS, validationErrorsKey } = require('./const');
 
-const config = Configuration.getGlobalConfig();
-const client = config.getClient();
-const env = Apify.getEnv();
+const client = Actor.apifyClient;
+const env = Actor.getEnv();
 
 const taskCache = {};
 const actorCache = {};

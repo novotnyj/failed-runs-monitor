@@ -1,11 +1,8 @@
-const Apify = require('apify');
-const { Configuration } = require('apify/build/configuration');
+const { Actor } = require('apify');
 const humanizeDuration = require('humanize-duration');
 const { REASONS, validationErrorsKey } = require('./const');
 
-const config = Configuration.getGlobalConfig();
-const client = config.getClient();
-const env = Apify.getEnv();
+const client = Actor.apifyClient;
 
 const taskCache = {};
 const actorCache = {};
@@ -25,19 +22,13 @@ async function getActor(actId) {
     return actorCache[actId];
 }
 
-async function getRunUrl(actId, taskId, runId) {
-    if (taskId) {
-        const task = await getTask(taskId);
-        return `https://console.apify.com/actors/tasks/${task.id}/runs/${runId}`;
-    }
-    const actor = await getActor(actId);
-    return `https://console.apify.com/actors/${actor.id}/runs/${runId}`;
+function getRunUrl(run) {
+    return `https://console.apify.com/actors/${run.actId}/runs/${run.id}`;
 }
 
-function getValidationDetailsUrl(runId) {
-    const { defaultKeyValueStoreId } = env;
-    const key = validationErrorsKey(runId);
-    return `https://api.apify.com/v2/key-value-stores/${defaultKeyValueStoreId}/records/${key}?disableRedirect=true`;
+async function getValidationDetailsUrl(runId) {
+    const store = await Actor.openKeyValueStore();
+    return store.getPublicUrl(validationErrorsKey(runId));
 }
 
 function reasonToString(reason, actual, expected) {
@@ -64,7 +55,7 @@ function reasonToString(reason, actual, expected) {
 
 async function reasonToSlackString(reason, actual, expected, run) {
     if (reason === REASONS.BAD_SCHEMA) {
-        const link = getValidationDetailsUrl(run.id);
+        const link = await getValidationDetailsUrl(run.id);
         return `<${link}|${actual} ${actual > 1 ? 'items' : 'item'}> did not match JSON schema`;
     }
 
@@ -73,7 +64,7 @@ async function reasonToSlackString(reason, actual, expected, run) {
 
 async function reasonToEmailString(reason, actual, expected, run) {
     if (reason === REASONS.BAD_SCHEMA) {
-        const link = getValidationDetailsUrl(run.id);
+        const link = await getValidationDetailsUrl(run.id);
         return `<a href="${link}">${actual} ${actual > 1 ? 'items' : 'item'}</a> did not match JSON schema`;
     }
 

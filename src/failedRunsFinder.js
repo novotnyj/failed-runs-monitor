@@ -1,14 +1,12 @@
-const Apify = require('apify');
-const { Configuration } = require('apify/build/configuration');
+const { Actor, log } = require('apify');
 const moment = require('moment');
 const _ = require('lodash');
+const { setTimeout: sleep } = require('node:timers/promises');
 const { ACT_JOB_STATUSES } = require('apify-shared/consts');
 const { REASONS } = require('./const');
 const { checkSchema } = require('./schemaChecker');
 
-const { log } = Apify.utils;
-const config = Configuration.getGlobalConfig();
-const client = config.getClient();
+const client = Actor.apifyClient;
 
 const FAILED_STATUS = ACT_JOB_STATUSES.FAILED;
 const SUCCESS_STATUS = ACT_JOB_STATUSES.SUCCEEDED;
@@ -121,7 +119,7 @@ async function getRecordWithRetry(storeId, key) {
             return result.value;
         } catch (e) {
             lastError = e;
-            await Apify.utils.sleep(200 * (2 ** i));
+            await sleep(200 * (2 ** i));
         }
     }
 
@@ -198,9 +196,9 @@ async function getFailedRuns({ config, options }) {
         minDatasetItems = 1;
     }
 
-    const env = await Apify.getEnv();
+    const env = await Actor.getEnv();
     const { actorTaskId } = env;
-    const store = await Apify.openKeyValueStore(`failed-runs-monitoring${actorTaskId ? `-${actorTaskId}` : ''}`);
+    const store = await Actor.openKeyValueStore(`failed-runs-monitoring${actorTaskId ? `-${actorTaskId}` : ''}`);
     const lastRunKey = taskId ? `task-${taskId.replace('/', '_')}` : actorId.replace('/', '_');
     const loadedLastRun = await store.getValue(lastRunKey);
 
@@ -294,17 +292,17 @@ async function getObjectName(actorId, taskId) {
 
 async function findFailedRuns(configs, options) {
     const tmpKey = 'FAILED_RUNS_TMP';
-    const failedRuns = await Apify.getValue(tmpKey) || {};
+    const failedRuns = await Actor.getValue(tmpKey) || {};
 
     let migrating = false;
-    Apify.events.on('migrating', () => {
+    Actor.on('migrating', () => {
         migrating = true;
     });
 
     for (const config of configs) {
         if (migrating) {
             log.info('Waiting for migration to happen...');
-            await Apify.utils.sleep(10 * 60 * 1000);
+            await sleep(10 * 60 * 1000);
         }
         if (!config.actorId && !config.taskId) {
             throw new Error(`Missing "actorId" or "taskId" property in ${JSON.stringify(config)}`);
@@ -323,7 +321,7 @@ async function findFailedRuns(configs, options) {
             name: await getObjectName(actorId, taskId),
             checkedAt: moment().toISOString(),
         };
-        await Apify.setValue(tmpKey, failedRuns);
+        await Actor.setValue(tmpKey, failedRuns);
     }
 
     if (Object.keys(failedRuns).length === 0) {

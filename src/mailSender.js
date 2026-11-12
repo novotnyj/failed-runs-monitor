@@ -1,4 +1,4 @@
-const Apify = require('apify');
+const { Actor } = require('apify');
 const { REASONS } = require('./const');
 const { getRunUrl, reasonToEmailString } = require('./utils');
 
@@ -9,7 +9,7 @@ async function formatMessage(failedRuns) {
     const runFormatter = async (item, run) => {
         const { reason, actual, expected } = run;
         const reasonString = await reasonToEmailString(reason, actual, expected, run);
-        const runUrl = await getRunUrl(item.actorId, item.taskId, run.id);
+        const runUrl = getRunUrl(run);
         return `<li><a href="${runUrl}">${run.id}</a>${reasonString !== '' ? ` (${reasonString})` : ''}</li>`;
     };
     for (const item of failedRuns) {
@@ -35,11 +35,11 @@ async function sendEmail(failedRuns, emails, { smallDatasetNotifications }) {
     }
     const message = await formatMessage(failedRuns);
 
-    return Apify.call('apify/send-mail', {
+    return Actor.call('apify/send-mail', {
         to: emails.join(', '),
         subject,
         html: message,
-    });
+    }, { log: null });
 }
 
 module.exports = sendEmail;

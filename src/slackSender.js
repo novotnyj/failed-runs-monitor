@@ -20,7 +20,7 @@ async function formatMessage(failedRuns, { smallDatasetNotifications }) {
     const runFormatter = async (run, item) => {
         const { reason, actual, expected } = run;
         const reasonString = await reasonToSlackString(reason, actual, expected, run);
-        const runUrl = await getRunUrl(item.actorId, item.taskId, run.id);
+        const runUrl = getRunUrl(run);
         return `- <${runUrl}|${run.id}>${reasonString !== '' ? ` (${reasonString})` : ''}`;
     };
     for (const item of failedRuns) {

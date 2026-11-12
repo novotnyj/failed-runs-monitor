@@ -39,7 +39,7 @@ async function sendEmail(failedRuns, emails, { smallDatasetNotifications }) {
         to: emails.join(', '),
         subject,
         html: message,
-    });
+    }, { log: null });
 }
 
 module.exports = sendEmail;
